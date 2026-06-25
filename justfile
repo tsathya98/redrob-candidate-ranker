@@ -21,8 +21,7 @@ install-backend:
 
 # install frontend dependencies
 install-frontend:
-    cd frontend
-    npm install
+    npm --prefix frontend install
 
 # --- ranking pipeline (the scored deliverable) -------------------------------
 
@@ -45,13 +44,11 @@ api:
 
 # run the frontend dev server (hot reload, proxies /api -> :8000)
 web:
-    cd frontend
-    npm run dev
+    npm --prefix frontend run dev
 
 # build the frontend for production -> frontend/dist
 build-web:
-    cd frontend
-    npm run build
+    npm --prefix frontend run build
 
 # production-style single origin: build UI, then serve UI + API on :8000
 serve: build-web
