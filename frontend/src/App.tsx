@@ -3,15 +3,18 @@ import { motion } from "framer-motion";
 import { BrainCircuit, Code2, ShieldAlert } from "lucide-react";
 import { useRanking, useHealth } from "@/lib/hooks";
 import { StatStrip } from "./components/StatStrip";
+import { PipelineFunnel } from "./components/PipelineFunnel";
 import { JdIntelligence } from "./components/JdIntelligence";
 import { Leaderboard } from "./components/Leaderboard";
 import { CandidateDrawer } from "./components/CandidateDrawer";
+import { HoneypotModal } from "./components/HoneypotModal";
 import { Card, Badge } from "./components/ui";
 
 export default function App() {
   const { data: ranking, isLoading, isError } = useRanking();
   const { data: health } = useHealth();
   const [selected, setSelected] = useState<string | null>(null);
+  const [honeypotId, setHoneypotId] = useState<string | null>(null);
 
   useEffect(() => {
     if (ranking && !selected) setSelected(ranking.results[0]?.candidate_id ?? null);
@@ -52,8 +55,14 @@ export default function App() {
       )}
 
       {ranking && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-5">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4">
           <StatStrip stats={ranking.stats} />
+        </motion.div>
+      )}
+
+      {ranking && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-5">
+          <PipelineFunnel />
         </motion.div>
       )}
 
@@ -61,7 +70,8 @@ export default function App() {
         <div className="h-[calc(100vh-240px)] min-h-[520px] max-h-[760px]"><JdIntelligence /></div>
         <div className="h-[calc(100vh-240px)] min-h-[520px] max-h-[760px]">
           {ranking && (
-            <Leaderboard rows={ranking.results} selectedId={selected} onSelect={setSelected} />
+            <Leaderboard rows={ranking.results} honeypots={ranking.honeypots}
+              selectedId={selected} onSelect={setSelected} onHoneypot={setHoneypotId} />
           )}
           {isLoading && <Card className="h-full animate-pulse" />}
         </div>
@@ -76,10 +86,11 @@ export default function App() {
           </div>
           <div className="flex flex-wrap gap-2">
             {ranking.honeypots.map((h) => (
-              <div key={h.candidate_id} className="rounded-lg border border-rose-400/15 bg-rose-400/[0.05] px-2.5 py-1.5 text-xs">
+              <button key={h.candidate_id} onClick={() => setHoneypotId(h.candidate_id)}
+                className="rounded-lg border border-rose-400/15 bg-rose-400/[0.05] px-2.5 py-1.5 text-left text-xs transition-colors hover:border-rose-400/40 hover:bg-rose-400/10">
                 <span className="text-[#cdd2e8]">{h.title}</span>
-                <span className="ml-2 text-rose-300/80">{h.honeypot_flags[0]}</span>
-              </div>
+                <span className="ml-2 font-mono text-rose-300/80">{h.honeypot_flags[0]}</span>
+              </button>
             ))}
           </div>
         </Card>
@@ -88,6 +99,8 @@ export default function App() {
       <footer className="mt-6 text-center text-[11px] text-[#5a5f7d]">
         Ranking runs CPU-only & offline (≤5 min, no LLM calls). Reasoning is templated from real profile facts.
       </footer>
+
+      <HoneypotModal id={honeypotId} onClose={() => setHoneypotId(null)} />
     </div>
   );
 }

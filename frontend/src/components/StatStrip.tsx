@@ -8,10 +8,10 @@ function Stat({ icon, value, label, sub, delay }: {
 }) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}>
-      <Card className="flex items-center gap-3 p-4">
+      <Card className="flex items-center gap-3 p-4 transition-colors hover:border-white/20">
         <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/5">{icon}</div>
         <div>
-          <div className="text-xl font-semibold text-white tabular-nums">{value}</div>
+          <div className="text-xl font-semibold tabular-nums text-white">{value}</div>
           <div className="text-xs text-[#8b90a8]">{label}</div>
           {sub && <div className="text-[11px] text-[#6f7596]">{sub}</div>}
         </div>
