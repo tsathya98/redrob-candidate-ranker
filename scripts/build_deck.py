@@ -38,7 +38,7 @@ def no_bullet(p, marL=0.0):
     pPr.append(pPr.makeelement(qn("a:buNone"), {}))
 
 
-def bullet(p, char, marL, indent, color="0B6B66"):
+def bullet(p, char, marL, indent, color="3730A3"):
     """Clean hanging bullet: marker at the indent, text wraps aligned at marL."""
     pPr = _pPr(p, marL=marL, indent=indent)
     buClr = pPr.makeelement(qn("a:buClr"), {})
@@ -50,53 +50,55 @@ def bullet(p, char, marL, indent, color="0B6B66"):
 TEMPLATE = Path("submission/Idea Submission Template _ Redrob.pptx")
 OUT = Path("submission/Redrob_Idea_Submission.pptx")
 
-BODY = RGBColor(0x20, 0x25, 0x2B)
-HEAD = RGBColor(0x0B, 0x6B, 0x66)  # teal accent
+BODY = RGBColor(0x1F, 0x29, 0x37)   # ink / body text
+HEAD = RGBColor(0x37, 0x30, 0xA3)   # indigo accent (matches the INDIA.RUNS brand)
 MUTE = RGBColor(0x6B, 0x72, 0x80)
+PANEL = RGBColor(0xF6, 0xF7, 0xFB)  # light content-card fill
+BORDER = RGBColor(0xE2, 0xE6, 0xF0)  # card border
+CARD = RGBColor(0xFF, 0xFF, 0xFF)   # stat-card fill
 
 # Per-slide content. Each item: ("h"|"b"|"s"|"note", text)
 #   h = bold sub-header, b = bullet, s = sub-bullet (indented), note = muted italic
 CONTENT = {
     2: [
         ("h", "What is your proposed solution?"),
-        ("b", "A hybrid, explainable, CPU-only ranking engine: honeypot filter -> JD gated rubric -> "
-              "semantic + lexical relevance -> cross-encoder rerank -> bounded behavioral multiplier -> "
-              "fact-grounded reasoning. One command produces the ranked CSV."),
-        ("h", "What differentiates it from traditional matching?"),
-        ("b", "Substance over keywords: scores what candidates BUILT (career descriptions); the skills "
-              "list is excluded from relevance, so keyword-stuffers don't rank."),
-        ("b", "Reads profiles, not just text: an impossibility/honeypot filter removes logically-impossible "
-              "profiles (0 in our top-100 vs the >10% that disqualifies)."),
-        ("b", "Availability-aware: a bounded behavioral multiplier down-weights perfect-on-paper but "
-              "unreachable candidates (stale logins, low recruiter response)."),
-        ("b", "Compliant by design: heavy models run offline (the JD is fixed -> precompute once); the "
-              "scored step is stdlib, CPU-only, offline, ~190s."),
+        ("b", "A hybrid, explainable, CPU-only ranking engine: honeypot filter → JD gated rubric → "
+              "semantic + lexical relevance → cross-encoder rerank → behavioral multiplier → "
+              "fact-grounded reasoning."),
+        ("h", "What makes it different from keyword matching?"),
+        ("b", "Substance over keywords: scores what candidates BUILT (career history); the skills list is "
+              "excluded, so keyword-stuffers don't rank."),
+        ("b", "Reads profiles: an impossibility/honeypot filter removes logically-impossible profiles "
+              "(0 in our top-100 vs the >10% that disqualifies)."),
+        ("b", "Availability-aware: a bounded behavioral multiplier down-weights unreachable "
+              "'perfect-on-paper' candidates."),
+        ("b", "Compliant by design: heavy models run offline; the scored step is stdlib, CPU-only, "
+              "offline, ~190s."),
     ],
     3: [
         ("h", "Key requirements extracted from the JD"),
-        ("b", "Must: production embeddings retrieval, vector/hybrid search, strong Python, ranking "
+        ("b", "Must-have: production embeddings retrieval, vector/hybrid search, strong Python, ranking "
               "evaluation (NDCG/MRR/MAP/A-B)."),
-        ("b", "Profile: 5-9 yrs (ideal 6-8), product company (not pure services/research), shipped an "
-              "end-to-end ranking/search/recsys system, Pune/Noida or willing to relocate, active on platform."),
-        ("b", "Negatives: services-only, CV/speech-without-NLP, title-chasers, recent-LLM-only/framework demos."),
+        ("b", "Ideal profile: 5–9 yrs, product company (not pure services/research), shipped an end-to-end "
+              "ranking/search/recsys system, Pune/Noida."),
+        ("b", "Negatives: services-only, CV/speech-without-NLP, title-chasers, recent-LLM-only."),
         ("h", "Evaluating fit beyond keyword matching"),
-        ("b", "Career-description evidence of retrieval/ranking work + an engineering-role gate "
-              "(a 'Marketing Manager' with 9 AI skills scores ~0)."),
-        ("b", "Skill DEPTH (proficiency x endorsements/duration, corroborated by Redrob assessments), not count."),
-        ("b", "Semantic embeddings catch plain-language Tier-5s; 23 Redrob signals weigh real availability."),
+        ("b", "Career-evidence of retrieval/ranking work + an engineering-role gate ('Marketing Manager' "
+              "+ AI skills ≈ 0)."),
+        ("b", "Skill DEPTH (proficiency × endorsements/duration × assessments), not count; embeddings "
+              "catch plain-language Tier-5s; 23 Redrob signals weigh availability."),
     ],
     4: [
-        ("h", "Retrieve -> score -> rerank"),
-        ("b", "Recall funnel: fast structured score over all 100k -> keep a top pool."),
+        ("h", "Retrieve → score → rerank"),
+        ("b", "Recall funnel: a fast structured score over all 100k keeps a top pool."),
         ("b", "Semantic: bge-small-en-v1.5 cosine to a distilled JD query, blended 50/50 with lexical "
               "concept matching."),
-        ("b", "Rerank: bge-reranker-v2-m3 cross-encoder takes half-authority over the top tier (drives NDCG@10)."),
-        ("b", "Components (weighted): relevance .30, title/career .28, skill-depth .20, experience .12, "
-              "education .10."),
-        ("b", "Multipliers: penalties (services x0.45, CV/speech x0.6, title-chaser x0.85, location) x "
-              "behavioral modifier (0.5-1.15)."),
-        ("b", "Final: score = fit x penalties x behavioral; sort desc, tie-break by candidate_id (matches "
-              "the validator). Models run offline; rank.py reads cached JSON."),
+        ("b", "Rerank: bge-reranker-v2-m3 cross-encoder takes half-authority over the top tier "
+              "(drives NDCG@10)."),
+        ("b", "Components: relevance .30, title/career .28, skill-depth .20, experience .12, education .10 "
+              "— × penalties (services/CV-speech/title-chaser/location) × behavioral (0.5–1.15)."),
+        ("b", "Final: score = fit × penalties × behavioral; tie-break by candidate_id. Models run offline; "
+              "rank.py reads cached JSON."),
     ],
     5: [
         ("h", "How ranking decisions are explained"),
@@ -110,11 +112,11 @@ CONTENT = {
               "Calibrated to 65 impossible profiles with 0 false positives; 0 reach the top-100."),
     ],
     6: [
-        ("h", "Complete workflow: JD input -> ranked output"),
-        ("b", "OFFLINE (GPU ok, one-time): embed the candidate pool + cross-encoder rerank -> cache "
+        ("h", "Complete workflow: JD input → ranked output"),
+        ("b", "OFFLINE (GPU ok, one-time): embed the candidate pool + cross-encoder rerank → cache "
               "artifacts/*.json."),
-        ("b", "SCORED (rank.py, CPU/offline, <=5 min): stream 100k -> honeypot filter -> component scoring "
-              "x behavioral multiplier -> top-100 heap -> fact-grounded reasoning -> submission.csv."),
+        ("b", "SCORED (rank.py, CPU/offline, ≤5 min): stream 100k → honeypot filter → component scoring "
+              "× behavioral multiplier → top-100 heap → fact-grounded reasoning → submission.csv."),
         ("b", "Validate: data/validate_submission.py confirms format before upload."),
         ("note", "Full workflow diagram: docs/05_approach_and_roadmap.md"),
     ],
@@ -141,12 +143,11 @@ CONTENT = {
     ],
     10: [
         ("h", "Submission assets"),
-        ("b", "GitHub (public): https://github.com/tsathya98/redrob-candidate-ranker"),
-        ("s", "code, docs, single reproduce command: just rank"),
-        ("b", "Ranked output: submission.xlsx (top-100, candidate_id / rank / score / reasoning)."),
-        ("b", "This deck (PDF) - approach, methodology, results."),
-        ("b", "Docs: README + docs/00-09 + docs/PROJECT_LOG.md (the iteration trail)."),
-        ("s", "Run the demo locally: just serve (FastAPI + React) or just docker-run."),
+        ("b", "GitHub (public): full code + docs; reproduce with just rank."),
+        ("b", "Ranked output: submission.xlsx (top-100)."),
+        ("b", "This deck (PDF): approach, methodology, results."),
+        ("b", "README + docs/00-09 + PROJECT_LOG (iteration trail)."),
+        ("note", "Live demo: just serve  or  just docker-run."),
     ],
     # 11 (closing) — left as the template's clean "THANK YOU" branded slide (don't overwrite).
 }
@@ -174,29 +175,29 @@ def fill_body(tf, items):
     for kind, text in items:
         p = tf.paragraphs[0] if first else tf.add_paragraph()
         first = False
-        p.line_spacing = 1.04
+        p.line_spacing = 1.02
         if kind == "h":
             no_bullet(p, marL=0.0)
-            p.space_before = Pt(11); p.space_after = Pt(5)
-            r = p.add_run(); r.text = text; style(r, 14.5, HEAD, bold=True)
+            p.space_before = Pt(9); p.space_after = Pt(4)
+            r = p.add_run(); r.text = text; style(r, 13.5, HEAD, bold=True)
         elif kind == "note":
             no_bullet(p, marL=0.0)
-            p.space_before = Pt(5); p.space_after = Pt(2)
-            r = p.add_run(); r.text = text; style(r, 10.5, MUTE, italic=True)
+            p.space_before = Pt(4); p.space_after = Pt(2)
+            r = p.add_run(); r.text = text; style(r, 10, MUTE, italic=True)
         elif kind == "s":
             bullet(p, "–", 0.55, -0.27, color="6B7280")
             p.space_after = Pt(3)
-            r = p.add_run(); r.text = text; style(r, 11, BODY)
+            r = p.add_run(); r.text = text; style(r, 10.5, BODY)
         else:  # bullet
             bullet(p, "•", 0.28, -0.28)
-            p.space_after = Pt(6)
-            r = p.add_run(); r.text = text; style(r, 12, BODY)
+            p.space_after = Pt(5)
+            r = p.add_run(); r.text = text; style(r, 11.5, BODY)
 
 
 def accent_rule(slide, x=0.5, y=1.33, w=1.4, h=0.055):
-    """A short teal rule under the slide title for visual hierarchy."""
+    """A short indigo rule under the slide title for visual hierarchy."""
     sh = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
-    sh.fill.solid(); sh.fill.fore_color.rgb = RGBColor(0x0B, 0x6B, 0x66)
+    sh.fill.solid(); sh.fill.fore_color.rgb = HEAD
     sh.line.fill.background(); sh.shadow.inherit = False
 
 
@@ -204,6 +205,39 @@ def body_shape(slide):
     cand = [s for s in slide.shapes if s.has_text_frame and Emu(s.top).inches > 1.2
             and Emu(s.height).inches < 5.0]
     return max(cand, key=lambda s: Emu(s.width).inches * Emu(s.height).inches, default=None)
+
+
+def content_panel(slide, x=0.45, y=1.5, w=9.1, h=3.52):
+    """A light rounded content card with a left indigo accent stripe (the 'designed' look)."""
+    panel = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    panel.fill.solid(); panel.fill.fore_color.rgb = PANEL
+    panel.line.color.rgb = BORDER; panel.line.width = Pt(0.75); panel.shadow.inherit = False
+    stripe = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                    Inches(x), Inches(y + 0.16), Inches(0.09), Inches(h - 0.32))
+    stripe.fill.solid(); stripe.fill.fore_color.rgb = HEAD
+    stripe.line.fill.background(); stripe.shadow.inherit = False
+    return panel
+
+
+def footer(slide, num, total=11):
+    lb = slide.shapes.add_textbox(Inches(0.5), Inches(5.13), Inches(6.5), Inches(0.26))
+    r0 = lb.text_frame.paragraphs[0].add_run()
+    r0.text = "Team Argmax · Intelligent Candidate Discovery & Ranking"; style(r0, 8, MUTE)
+    rb = slide.shapes.add_textbox(Inches(8.1), Inches(5.13), Inches(1.4), Inches(0.26))
+    pr = rb.text_frame.paragraphs[0]; pr.alignment = PP_ALIGN.RIGHT
+    rr = pr.add_run(); rr.text = f"{num:02d} / {total}"; style(rr, 8, MUTE)
+
+
+def stat_card(slide, x, y, w, h, number, lab):
+    c = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    c.fill.solid(); c.fill.fore_color.rgb = CARD
+    c.line.color.rgb = BORDER; c.line.width = Pt(0.75); c.shadow.inherit = False
+    tf = c.text_frame; tf.word_wrap = True; tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    tf.margin_top = tf.margin_bottom = Inches(0.04)
+    p1 = tf.paragraphs[0]; p1.alignment = PP_ALIGN.CENTER
+    r1 = p1.add_run(); r1.text = number; style(r1, 25, HEAD, bold=True)
+    p2 = tf.add_paragraph(); p2.alignment = PP_ALIGN.CENTER; p2.line_spacing = 1.0
+    r2 = p2.add_run(); r2.text = lab; style(r2, 9.5, MUTE)
 
 
 # ---- architecture diagram (native pptx shapes; renders crisply in the PDF) -------------------------
@@ -290,50 +324,77 @@ def draw_arch(slide):
         "stdlib · CPU · offline.", GREYF, fg=RGBColor(0x20, 0x25, 0x2B), size=8)
 
 
+def draw_results(slide):
+    stats = [("0", "honeypots in top-100"), ("~190s", "CPU · offline run"),
+             ("83/100", "in the 5–9 yr band"), ("97/100", "show ranking work")]
+    y, h, w, gap, x0 = 1.6, 1.18, 2.13, 0.21, 0.45
+    for i, (num, lab) in enumerate(stats):
+        stat_card(slide, x0 + i * (w + gap), y, w, h, num, lab)
+    content_panel(slide, 0.45, 3.06, 9.1, 1.92)
+    tb = slide.shapes.add_textbox(Inches(0.78), Inches(3.24), Inches(8.5), Inches(1.6))
+    fill_body(tb.text_frame, [
+        ("b", "Top-10 are senior product-company retrieval/ranking/NLP engineers (Meta, Apple, Netflix, "
+              "Zomato, Paytm, Razorpay...), 5.9-7.9 yrs - no honeypots, stuffers or juniors."),
+        ("b", "Validator passes (100 rows, ranks 1-100, non-increasing, id tie-break); runs in ~190s, "
+              "CPU-only, offline, <16 GB - the only GPU step is offline precompute."),
+        ("note", "Ground truth is hidden - method validated by a 3-way query ablation + full-100k "
+                 "negative calibration (docs/09)."),
+    ])
+
+
+def panel_body(slide, items, x=0.78, y=1.64, w=8.45, h=3.25):
+    tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+    fill_body(tb.text_frame, items)
+    return tb
+
+
 def main():
     prs = Presentation(str(TEMPLATE))
     slides = list(prs.slides)
 
-    # slide 1 fields
+    # slide 1 — title fields
     for sh in slides[0].shapes:
         if not sh.has_text_frame:
             continue
         for prefix, val in TITLE_FIELDS.items():
             if sh.text_frame.text.strip().startswith(prefix):
-                tf = sh.text_frame
-                tf.word_wrap = True
-                tf.clear()
-                r = tf.paragraphs[0].add_run()
-                r.text = f"{prefix} : {val}"
+                tf = sh.text_frame; tf.word_wrap = True; tf.clear()
+                r = tf.paragraphs[0].add_run(); r.text = f"{prefix} : {val}"
                 style(r, 12 if prefix != "Problem Statement" else 11, BODY,
                       bold=(prefix != "Problem Statement"))
 
-    # content slides
+    # content slides (2-6, 8, 9, 10)
     for n, items in CONTENT.items():
         slide = slides[n - 1]
-        accent_rule(slide)
-        bs = body_shape(slide)
-        if bs is None:  # slide had no body box -> add one
-            bs = slide.shapes.add_textbox(Inches(0.5), Inches(1.4), Inches(9.0), Inches(3.6))
-        fill_body(bs.text_frame, items)
-
-    # slide 10 — add a live-demo screenshot beside the asset list
-    shot = Path("docs/images/ui_hero.png")
-    if shot.exists():
-        s10 = slides[9]
-        bs = body_shape(s10)
+        bs = body_shape(slide)            # remove the template's prompt-question box
         if bs is not None:
-            bs.width = Inches(5.15)
-        cap = s10.shapes.add_textbox(Inches(5.5), Inches(1.66), Inches(4.1), Inches(0.3))
-        rc = cap.text_frame.paragraphs[0].add_run()
-        rc.text = "Live demo dashboard  (just serve)"
-        style(rc, 10, HEAD, bold=True)
-        pic = s10.shapes.add_picture(str(shot), Inches(5.5), Inches(2.0), width=Inches(4.05))
-        pic.line.color.rgb = RGBColor(0xCB, 0xD5, 0xE1); pic.line.width = Pt(0.75)
+            bs._element.getparent().remove(bs._element)
+        accent_rule(slide)
 
-    # slide 7 — System Architecture: native diagram
+        if n == 8:
+            draw_results(slide)
+        elif n == 10:
+            content_panel(slide, x=0.45, y=1.52, w=5.35, h=3.42)
+            panel_body(slide, items, x=0.78, y=1.72, w=4.75, h=3.05)
+            shot = Path("docs/images/ui_hero.png")
+            if shot.exists():
+                cap = slide.shapes.add_textbox(Inches(6.0), Inches(1.62), Inches(3.6), Inches(0.3))
+                rc = cap.text_frame.paragraphs[0].add_run()
+                rc.text = "Live demo dashboard  ·  just serve"; style(rc, 10, HEAD, bold=True)
+                pic = slide.shapes.add_picture(str(shot), Inches(6.0), Inches(1.98), width=Inches(3.55))
+                pic.line.color.rgb = BORDER; pic.line.width = Pt(0.75)
+                url = slide.shapes.add_textbox(Inches(6.0), Inches(4.18), Inches(3.6), Inches(0.3))
+                ru = url.text_frame.paragraphs[0].add_run()
+                ru.text = "github.com/tsathya98/redrob-candidate-ranker"; style(ru, 8.5, MUTE)
+        else:
+            content_panel(slide)
+            panel_body(slide, items)
+        footer(slide, n)
+
+    # slide 7 — System Architecture (native diagram)
     accent_rule(slides[6])
     draw_arch(slides[6])
+    footer(slides[6], 7)
 
     prs.save(str(OUT))
     print(f"wrote {OUT}")
