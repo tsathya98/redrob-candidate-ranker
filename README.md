@@ -24,9 +24,16 @@ reasoning about **contextual + behavioral fit, not keyword overlap**.
 
 ![Redrob candidate-ranking demo dashboard](docs/images/ui_full.png)
 
-*The demo sandbox (`just serve`): JD intelligence (must-have **gates** + down-weighted **negatives**),
+*The demo sandbox (`just serve`): the **ranking-pipeline funnel** (100k → −65 honeypots → recall pool →
+cross-encoder shortlist → top-100), JD intelligence (must-have **gates** + down-weighted **negatives**),
 the ranked **leaderboard**, and a per-candidate **score breakdown** with cross-encoder-reranked relevance
 signals and fact-grounded "reading between the lines" reasoning.*
+
+**Naive-vs-Smart — the thesis, made visual.** Flip the leaderboard to the keyword/ATS view: honeypots &
+keyword-stuffers float to the top, each badged with where *our* engine actually ranks them
+(`our #N` / `honeypot`). Clicking a honeypot reveals the exact contradiction (claimed years vs career span).
+
+![Keyword (ATS) ranking vs our engine](docs/images/ui_keyword.png)
 
 ## Results & observations (for reviewers)
 
