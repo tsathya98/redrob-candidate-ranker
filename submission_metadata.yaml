@@ -1,0 +1,71 @@
+# Redrob Hackathon — Submission Metadata
+# Mirrors the portal metadata. Source template: submission_metadata_template.yaml.
+# TODO: fill team identity / repo / sandbox before submission.
+
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "TODO-team-name"
+
+primary_contact:
+  name: "TODO"
+  email: "tsathya98@gmail.com"
+  phone: "TODO"
+
+team_members:
+  - name: "TODO"
+    email: "tsathya98@gmail.com"
+    role: "ML Engineer"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "TODO-https://github.com/USER/REPO"
+sandbox_link: "TODO-hosted-sandbox-url"   # HF Spaces / Streamlit / Replit / Colab / Docker / Binder
+reproduce_command: "python src/rank.py --candidates ./candidates.jsonl --out ./submission.csv"
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: "WSL2 (Linux) — TODO confirm final run host"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "TODO (python --version)"
+  os: "Ubuntu on WSL2"
+  uses_gpu_for_inference: false          # must be false
+  has_network_during_ranking: false      # must be false
+  pre_computation_required: true         # embeddings precomputed offline (Phase 4)
+  pre_computation_time_minutes: 0        # TODO measure
+
+# ============================================================================
+# AI tools declaration (transparency; honest declaration is not penalized)
+# ============================================================================
+ai_tools_used:
+  - "Claude"   # architecture, docs, code scaffolding, code review
+
+ai_usage_summary: |
+  Used Claude (Claude Code) for challenge analysis, documentation, architecture design, and code
+  scaffolding/review. Ranking design and engineering decisions are the team's own; no candidate data is
+  sent to any LLM and the ranking step makes no network/LLM calls (CPU-only, offline).
+
+# ============================================================================
+# Approach summary
+# ============================================================================
+methodology_summary: |
+  TODO (<=200 words). Hybrid explainable CPU-only ranker: honeypot/impossibility filter, JD-encoded
+  hard-gates + soft-penalties (services-only, research-only, recent-LLM-only, title-chaser, CV/speech-only,
+  location), semantic relevance (precomputed embeddings + BM25) over career-description text to catch
+  plain-language fits, structured scoring (title/career evidence, 5-9yr band, skill depth corroborated by
+  assessment scores, education), and a bounded behavioral-availability multiplier from redrob_signals.
+  Reasoning is templated from real profile facts (no hallucination). See docs/.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true     # dedicated honeypot filter; assert 0 in top-100 before submit
+  reproduction_tested: false    # TODO set true after timing the run end-to-end

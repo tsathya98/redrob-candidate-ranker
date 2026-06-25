@@ -1,0 +1,19 @@
+# Redrob Candidate Ranker — dependencies
+# Constraint: the ranking step must run CPU-only, offline, <=5 min, <=16 GB (docs/04).
+# Pinned versions will be locked once the build firms up (Phase 4+).
+
+# --- Phase 1-3: core ranking is intentionally stdlib-first (json, csv, re, datetime, math). ---
+# No third-party packages strictly required for the rule/structured-scoring layers.
+
+# --- Phase 4: semantic layer (all CPU-friendly, offline once models are cached locally) ---
+# sentence-transformers   # small CPU embedding model (BGE-small / E5-small / all-MiniLM)
+# numpy                   # vector math for cached embeddings
+# faiss-cpu               # optional ANN index for fast top-k retrieval
+# rank-bm25               # lexical BM25 component for hybrid retrieval
+
+# --- Optional (Phase 8, only if justified): learning-to-rank ---
+# scikit-learn
+# xgboost
+
+# --- Dev / validation ---
+# pyyaml                  # read submission_metadata.yaml
