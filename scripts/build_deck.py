@@ -434,7 +434,7 @@ def main():
             rc = pc.add_run()
             rc.text = "LIVE on Hugging Face Space    ·    tsathya98-redrob-candidate-ranker.hf.space"
             style(rc, 10.5, GREEN, bold=True)
-            image_panel(slide, "docs/images/ui_full.png", 1.5, 2.14, 7.0, 2.86)
+            image_panel(slide, "docs/images/ui_full.png", 0.8, 2.06, 8.4, 2.98)
         else:
             content_panel(slide)
             panel_body(slide, items)
