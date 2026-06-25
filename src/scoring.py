@@ -84,7 +84,30 @@ def score_candidate(candidate: dict, context: dict | None = None) -> dict:
     ten = F.tenure_features(candidate)
     bf = F.behavioral_features(candidate)
 
-    relevance, matched = _relevance_from_hits(tc["concept_hits"])
+    lexical, matched = _relevance_from_hits(tc["concept_hits"])
+
+    # --- Slice 2: blend in precomputed semantic similarity (relevance) and cross-encoder rerank (fit) ---
+    ctx = context or {}
+    cid = candidate["candidate_id"]
+    sem = ctx.get("semantic")
+    rer = ctx.get("reranker")
+    rr_lo, rr_hi = ctx.get("rerank_range", (0.0, 1.0))
+
+    sem_norm = None
+    if sem is not None and cid in sem:
+        sem_norm = max(0.0, min(1.0, (sem[cid] + 1.0) / 2.0))  # cosine [-1,1] -> [0,1]
+    rer_norm = None
+    if rer is not None and cid in rer:
+        rer_norm = (rer[cid] - rr_lo) / (rr_hi - rr_lo) if rr_hi > rr_lo else 0.5
+        rer_norm = max(0.0, min(1.0, rer_norm))
+
+    # relevance component = lexical (Slice 1) blended with semantic recall (Slice 2)
+    relevance = lexical if sem_norm is None else (0.5 * lexical + 0.5 * sem_norm)
+    relevance_parts = {"lexical": round(lexical, 4)}
+    if sem_norm is not None:
+        relevance_parts["semantic"] = round(sem_norm, 4)
+    if rer_norm is not None:
+        relevance_parts["rerank"] = round(rer_norm, 4)
 
     # skill depth is gated by engineering-role plausibility (stuffer defense)
     skill_gated = sk["skill_depth"] * (0.3 + 0.7 * tc["role_relevance"])
@@ -102,6 +125,11 @@ def score_candidate(candidate: dict, context: dict | None = None) -> dict:
         "education": ed["education"],
     }
     base = sum(jd.COMPONENT_WEIGHTS[k] * v for k, v in components.items())
+
+    # cross-encoder reranker (when available for this candidate) takes authority over the top tier:
+    # half the pre-penalty fit becomes the cross-encoder relevance. Stuffers score low on BOTH, so they
+    # still sink; honeypots are excluded upstream. (docs/06 retrieve-and-rerank.)
+    fit = base if rer_norm is None else (0.5 * base + 0.5 * rer_norm)
 
     # --- soft penalties (multiplicative) ---
     penalties = []
@@ -125,12 +153,14 @@ def score_candidate(candidate: dict, context: dict | None = None) -> dict:
 
     modifier, bconcerns = _behavioral_modifier(bf)
 
-    score = base * pmult * modifier
+    score = fit * pmult * modifier
 
     return {
         "candidate_id": candidate["candidate_id"],
         "score": round(score, 6),
         "base": round(base, 4),
+        "fit": round(fit, 4),
+        "reranked": rer_norm is not None,
         "components": components,
         "modifier": modifier,
         "penalty_multiplier": round(pmult, 4),
@@ -143,6 +173,7 @@ def score_candidate(candidate: dict, context: dict | None = None) -> dict:
             "yoe": exp["yoe"],
             "has_product": tc["has_product"],
             "location_fit": loc["location_fit"],
+            "relevance_parts": relevance_parts,
         },
     }
 

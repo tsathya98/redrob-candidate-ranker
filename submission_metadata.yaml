@@ -35,8 +35,8 @@ compute:
   os: "Ubuntu on WSL2"
   uses_gpu_for_inference: false          # must be false
   has_network_during_ranking: false      # must be false
-  pre_computation_required: true         # embeddings precomputed offline (Phase 4)
-  pre_computation_time_minutes: 0        # TODO measure
+  pre_computation_required: true         # bge-small-en embeddings + bge-reranker-v2-m3, offline
+  pre_computation_time_minutes: 6        # GPU (RTX 4060 Ti): embed ~100k 5.2min + rerank top-1000 0.5min
 
 # ============================================================================
 # AI tools declaration (transparency; honest declaration is not penalized)
@@ -53,12 +53,16 @@ ai_usage_summary: |
 # Approach summary
 # ============================================================================
 methodology_summary: |
-  TODO (<=200 words). Hybrid explainable CPU-only ranker: honeypot/impossibility filter, JD-encoded
-  hard-gates + soft-penalties (services-only, research-only, recent-LLM-only, title-chaser, CV/speech-only,
-  location), semantic relevance (precomputed embeddings + BM25) over career-description text to catch
-  plain-language fits, structured scoring (title/career evidence, 5-9yr band, skill depth corroborated by
-  assessment scores, education), and a bounded behavioral-availability multiplier from redrob_signals.
-  Reasoning is templated from real profile facts (no hallucination). See docs/.
+  Hybrid, explainable, CPU-only ranker. Pipeline: (1) honeypot/impossibility filter forces logically
+  impossible profiles out; (2) JD encoded as a weighted, gated rubric with hard-gates + soft-penalties
+  (services-only, research-only, recent-LLM-only, title-chaser, CV/speech-only, location); (3) relevance =
+  lexical concept matching over career descriptions blended with semantic similarity from precomputed
+  bge-small-en-v1.5 embeddings (catches plain-language fits); (4) a bge-reranker-v2-m3 cross-encoder,
+  precomputed offline against the fixed JD, takes half-authority over the top tier for NDCG@10; (5) structured
+  scoring (title/career evidence, 5-9yr band, skill depth corroborated by assessment scores, education) x a
+  bounded behavioral-availability multiplier from redrob_signals. Embeddings/reranker run offline (GPU);
+  rank.py loads cached JSON and runs CPU-only, offline, <3min. Reasoning is templated from real profile facts
+  (no LLM, no hallucination). See docs/.
 
 # ============================================================================
 # Declarations

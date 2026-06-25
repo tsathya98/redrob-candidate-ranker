@@ -16,6 +16,26 @@ from src import jd_profile as jd
 # JD must-have concept categories (for gap analysis).
 MUST_HAVE_CONCEPTS = ["embeddings_retrieval", "vector_db_hybrid_search", "ranking_recsys", "ranking_eval"]
 
+# Slice-2 precomputed artifacts for the demo sample (semantic + reranker). Empty => lexical-only.
+_ARTIFACTS_DIR = Path(__file__).resolve().parent / "demo_data" / "artifacts"
+
+
+def _load_context() -> dict:
+    sem = _ARTIFACTS_DIR / "semantic.json"
+    rer = _ARTIFACTS_DIR / "reranker.json"
+    if not sem.exists():
+        return {}
+    ctx: dict = {"semantic": json.loads(sem.read_text())}
+    if rer.exists():
+        r = json.loads(rer.read_text())
+        ctx["reranker"] = r
+        vals = list(r.values())
+        ctx["rerank_range"] = (min(vals), max(vals)) if vals else (0.0, 1.0)
+    return ctx
+
+
+CONTEXT = _load_context()
+
 _CONCEPT_LABEL = {
     "embeddings_retrieval": "Embeddings & retrieval",
     "vector_db_hybrid_search": "Vector DB / hybrid search",
@@ -98,7 +118,7 @@ def rank_candidates(candidates: list[dict]) -> dict:
                 "naive_score": _naive_score(c),
             })
             continue
-        s = scoring.score_candidate(c)
+        s = scoring.score_candidate(c, CONTEXT)
         scored_rows.append((c, s))
 
     ranked = scoring.rank_pool([s for _, s in scored_rows], top_n=len(scored_rows))
@@ -119,6 +139,8 @@ def rank_candidates(candidates: list[dict]) -> dict:
             "matched_concepts": [_CONCEPT_LABEL.get(x, x) for x in s["matched_concepts"]],
             "reasoning": reasoning.build_reasoning(c, s, s["rank"]),
             "naive_score": _naive_score(c),
+            "reranked": s.get("reranked", False),
+            "relevance_parts": s["evidence"].get("relevance_parts", {}),
         })
 
     # naive keyword ranking (what an ATS / stuffer-friendly ranker would do)
@@ -169,7 +191,7 @@ def gap_analysis(c: dict, matched_concept_keys: list[str]) -> list[str]:
 
 def candidate_detail(c: dict) -> dict:
     """Full profile + score breakdown + reading-between-the-lines + gap analysis."""
-    s = scoring.score_candidate(c)
+    s = scoring.score_candidate(c, CONTEXT)
     is_hp = honeypot.is_honeypot(c)
     return {
         **_brief(c),
@@ -183,6 +205,8 @@ def candidate_detail(c: dict) -> dict:
         "honeypot_flags": honeypot.impossibility_flags(c) if is_hp else [],
         "score": s["score"] if not is_hp else 0.0,
         "components": s["components"],
+        "relevance_parts": s["evidence"].get("relevance_parts", {}),
+        "reranked": s.get("reranked", False),
         "modifier": s["modifier"],
         "penalties": s["penalties"],
         "concerns": s["concerns"],

@@ -36,6 +36,21 @@ validate:
 # rank then validate
 check: rank validate
 
+# --- Slice 2: offline precompute (semantic embeddings + cross-encoder reranker) ----
+
+# install precompute deps (CPU torch + sentence-transformers) — one-time, offline-capable after
+precompute-install:
+    uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+    uv pip install -r requirements-precompute.txt
+
+# precompute artifacts for the full pool -> artifacts/ (offline, may exceed 5 min; one-time)
+precompute:
+    uv run python scripts/precompute.py --candidates data/candidates.jsonl --out artifacts
+
+# precompute artifacts for the 80-candidate demo sample (committed for the sandbox)
+precompute-demo:
+    uv run python scripts/precompute.py --candidates app/demo_data/demo_candidates.jsonl --out app/demo_data/artifacts --shortlist 80
+
 # --- demo UI (the sandbox) ---------------------------------------------------
 
 # run the FastAPI backend (API at :8000; also serves frontend/dist if built)

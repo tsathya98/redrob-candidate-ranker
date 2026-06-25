@@ -1,0 +1,6 @@
+# OFFLINE precompute deps (Slice 2) — NOT needed at rank time.
+# rank.py only reads the cached JSON artifacts (stdlib). Install CPU torch first:
+#   uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   uv pip install -r requirements-precompute.txt
+sentence-transformers>=3.0
+numpy>=1.26

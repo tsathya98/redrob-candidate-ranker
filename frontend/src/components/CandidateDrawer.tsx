@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useCandidate, useExplain } from "@/lib/hooks";
 import { scoreColor } from "@/lib/utils";
-import { Card, Badge, SectionTitle } from "./ui";
+import { Card, Badge, SectionTitle, Meter } from "./ui";
 
 const COMP_LABEL: Record<string, string> = {
   relevance: "Relevance", title_career: "Title/Career", experience: "Experience",
@@ -72,6 +72,33 @@ export function CandidateDrawer({ id }: { id: string | null }) {
           <span>availability ×{d.modifier.toFixed(2)}</span>
           {d.penalties.length > 0 && <span className="text-rose-300">{d.penalties.length} penalty applied</span>}
         </div>
+
+        {/* Slice-2 relevance signals: lexical + semantic + cross-encoder rerank */}
+        {d.relevance_parts && Object.keys(d.relevance_parts).length > 0 && (
+          <div className="mt-3 rounded-xl bg-white/[0.03] p-3">
+            <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-wider text-[#6f7596]">
+              <span>Relevance signals</span>
+              {d.reranked && <Badge tone="accent">cross-encoder reranked</Badge>}
+            </div>
+            <div className="space-y-2">
+              {([["lexical", "Lexical (keywords)", "#22d3ee"],
+                 ["semantic", "Semantic (embeddings)", "#7c5cff"],
+                 ["rerank", "Cross-encoder (bge-reranker)", "#34d399"]] as const).map(([k, label, color]) => {
+                const v = d.relevance_parts[k];
+                if (v === undefined) return null;
+                return (
+                  <div key={k}>
+                    <div className="mb-1 flex justify-between text-[11px]">
+                      <span className="text-[#cdd2e8]">{label}</span>
+                      <span className="tabular-nums text-[#6f7596]">{(v * 100).toFixed(0)}</span>
+                    </div>
+                    <Meter value={v} color={color} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* reasoning */}
         <div className="mt-4 rounded-xl bg-white/[0.03] p-3">

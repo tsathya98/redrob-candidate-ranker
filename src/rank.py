@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import heapq
+import json
 import sys
 import time
 from pathlib import Path
@@ -34,10 +35,32 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     p.add_argument("--candidates", required=True, type=Path, help="Path to candidates.jsonl (or .jsonl.gz).")
     p.add_argument("--out", required=True, type=Path, help="Output CSV (candidate_id,rank,score,reasoning).")
-    p.add_argument("--embeddings", type=Path, default=None, help="Precomputed embeddings artifact (Slice 2).")
+    p.add_argument("--artifacts", type=Path, default=Path("artifacts"),
+                   help="Dir with precomputed semantic.json + reranker.json (Slice 2). Optional.")
     p.add_argument("--top-n", type=int, default=100, help="Number of candidates to output (challenge: 100).")
     p.add_argument("--quiet", action="store_true", help="Suppress progress output.")
     return p.parse_args(argv)
+
+
+def load_context(artifacts_dir: Path, quiet: bool = False) -> dict:
+    """Load precomputed Slice-2 artifacts if present; empty dict => Slice-1 (lexical-only) fallback."""
+    sem_path = artifacts_dir / "semantic.json"
+    rer_path = artifacts_dir / "reranker.json"
+    if not sem_path.exists():
+        if not quiet:
+            print("No artifacts found — running Slice-1 (lexical only). "
+                  "Run scripts/precompute.py for semantic + reranker.", file=sys.stderr)
+        return {}
+    ctx: dict = {"semantic": json.loads(sem_path.read_text())}
+    if rer_path.exists():
+        rer = json.loads(rer_path.read_text())
+        ctx["reranker"] = rer
+        vals = list(rer.values())
+        ctx["rerank_range"] = (min(vals), max(vals)) if vals else (0.0, 1.0)
+    if not quiet:
+        print(f"Loaded artifacts: semantic={len(ctx['semantic'])}, "
+              f"reranker={len(ctx.get('reranker', {}))}", file=sys.stderr)
+    return ctx
 
 
 def write_submission(rows: list[dict], out_path: Path) -> None:
@@ -57,6 +80,7 @@ def write_submission(rows: list[dict], out_path: Path) -> None:
 def run(args: argparse.Namespace) -> list[dict]:
     """Execute the ranking pipeline and return the ranked top-n rows."""
     t0 = time.time()
+    context = load_context(args.artifacts, quiet=args.quiet)
     heap: list[tuple] = []          # min-heap of (score, candidate_id, counter)
     payloads: dict[int, tuple] = {} # counter -> (scored, candidate)
     counter = 0
@@ -67,7 +91,7 @@ def run(args: argparse.Namespace) -> list[dict]:
         if honeypot.is_honeypot(cand):       # force impossible profiles out of contention (DQ safety)
             n_honeypot += 1
             continue
-        scored = scoring.score_candidate(cand)
+        scored = scoring.score_candidate(cand, context)
         key = (scored["score"], scored["candidate_id"], counter)
         if len(heap) < TOP_K_BUFFER:
             heapq.heappush(heap, key)

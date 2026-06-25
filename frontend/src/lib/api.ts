@@ -18,6 +18,12 @@ export interface Components {
   education: number;
 }
 
+export interface RelevanceParts {
+  lexical?: number;
+  semantic?: number;
+  rerank?: number;
+}
+
 export interface RankedRow extends Brief {
   status: "ranked";
   rank: number;
@@ -29,6 +35,8 @@ export interface RankedRow extends Brief {
   matched_concepts: string[];
   reasoning: string;
   naive_score: number;
+  reranked: boolean;
+  relevance_parts: RelevanceParts;
 }
 
 export interface HoneypotRow extends Brief {
@@ -77,6 +85,8 @@ export interface CandidateDetail extends Brief {
   honeypot_flags: string[];
   score: number;
   components: Components;
+  relevance_parts: RelevanceParts;
+  reranked: boolean;
   modifier: number;
   penalties: string[];
   concerns: string[];

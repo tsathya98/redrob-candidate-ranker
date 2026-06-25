@@ -11,7 +11,9 @@ data/
 old/
 
 # --- Precomputed / intermediate artifacts (regenerate via scripts) ---
-artifacts/
+# Only the ROOT artifacts/ (full 100k, large) is ignored; the small committed demo-sample
+# artifacts under app/demo_data/artifacts/ are kept so the sandbox runs without precompute.
+/artifacts/
 embeddings/
 *.npy
 *.faiss
@@ -35,3 +37,6 @@ env/
 __MACOSX/
 .vscode/
 .idea/
+
+# Orientation files
+orientation.md

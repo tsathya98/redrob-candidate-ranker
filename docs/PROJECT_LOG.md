@@ -170,3 +170,39 @@ embeddings) → Slice 3 (tuning), which flow through the UI automatically.
 - Verified: `just --list` and `just validate` (→ "Submission is valid") run via `uv run`.
 
 **Next steps:** unchanged — deploy sandbox, then Slice 2 (embeddings).
+
+---
+
+## 2026-06-25 — Slice 2: semantic embeddings + cross-encoder reranker
+
+**Goal:** Add the semantic layer (bi-encoder embeddings) + a local cross-encoder reranker, precomputed
+offline against the fixed JD so `rank.py` stays CPU-only/offline. (User: full retrieve+rerank; browsed
+rerankers → bge-reranker-v2-m3 is the open-source default; Cohere excluded — hosted/network.)
+
+**Done:**
+- `scripts/precompute.py` — recall funnel: Slice-1 score → embed with **bge-small-en-v1.5** → cross-encoder
+  **bge-reranker-v2-m3** on the top-K shortlist. Writes `artifacts/{semantic,reranker,meta}.json`. Fully
+  offline-capable (`HF_HUB_OFFLINE=1`); GPU auto-used if available.
+- `src/scoring.py` — `relevance` = lexical⊕semantic blend; cross-encoder takes half-authority over the top
+  tier (`fit = 0.5·base + 0.5·rerank`). Graceful Slice-1 fallback if artifacts absent. Explainable
+  `relevance_parts` {lexical, semantic, rerank}.
+- `src/rank.py` — loads artifacts (or falls back). `app/` + UI surface the new signals (drawer "Relevance
+  signals" with lexical/semantic/cross-encoder bars + reranked badge).
+- `requirements-precompute.txt`; `justfile` recipes `precompute-install`/`precompute`/`precompute-demo`.
+
+**GPU:** installed CUDA torch (cu128) on an RTX 4060 Ti (`torch.cuda.is_available()` True). Precompute used
+GPU for the *offline* step only — the scored `rank.py` still loads plain JSON (CPU/offline, no model).
+
+**Results (full 100k, GPU precompute):**
+- Embedded **99,935** candidates (5:13), reranked top **1000** (0:33) on GPU.
+- `rank.py` Slice-2 run: **146.9s** CPU/offline, validator passes, 65 honeypots filtered.
+- vs Slice-1: top-10 overlap **9/10** (cross-encoder reordered the top tier), top-50 37/50, top-100 83/100
+  (**17 new plain-language candidates** surfaced by embeddings). Top-10 remain genuine AI/ML/recsys/search
+  engineers — quality held, ordering refined.
+- Committed small demo-sample artifacts (`app/demo_data/artifacts/`, 70 emb + 70 rerank) so the sandbox shows
+  the signals without needing torch/precompute. Root `artifacts/` (full, 2.5 MB) stays git-ignored/regenerable.
+
+**Notes:** uv installs CUDA torch as `+cu128` only with `--reinstall-package torch` + a high `UV_HTTP_TIMEOUT`
+(the nvidia-* wheels are multi-GB and flaky). Fixed a `meta.json` NameError leftover from the funnel refactor.
+
+**Next steps:** deploy the HF sandbox; then Slice 3 (tune component/blend weights on archetypes, validate top-50).

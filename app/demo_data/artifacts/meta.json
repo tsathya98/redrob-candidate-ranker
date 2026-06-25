@@ -1,0 +1,9 @@
+{
+  "embed_model": "BAAI/bge-small-en-v1.5",
+  "rerank_model": "BAAI/bge-reranker-v2-m3",
+  "n_scored": 80,
+  "n_embedded": 70,
+  "n_honeypots": 10,
+  "shortlist": 70,
+  "query_instruction": "Represent this sentence for searching relevant passages: "
+}
