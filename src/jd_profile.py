@@ -99,14 +99,29 @@ CONCEPT_WEIGHTS = {
 }
 
 # --- Disqualifier / down-weight concepts (JD "explicitly do NOT want"). ---
+# Each is a real JD negative. Whether it is *implemented as a penalty* depends on whether it
+# actually manifests in this pool — verified by a full-100k scan (see docs/03 §JD-negative calibration
+# and the PROJECT_LOG). The synthetic pool encodes its traps as keyword-stuffers / plain-language
+# Tier-5s / behavioral-twins / honeypots, NOT as the JD's recruiter-advice archetypes:
+#   IMPLEMENTED (these manifest and separate cleanly):
+#     title_chaser        -> tenure_features + ×0.85 penalty
+#     services_only        -> ×0.45 penalty (with the "prior product experience is fine" carve-out)
+#     cv_speech_only       -> ×0.6 penalty when CV/speech present without NLP/IR
+#   VERIFIED-ABSENT (intentionally NOT penalized — would be dead code or actively harmful):
+#     research_only        -> 0% academic/lab employers, 0% PhD, 0.28% research-ish title anywhere
+#     stale_no_prod_code   -> 0.00% architect/tech-lead/VP/director titles in the entire pool
+#     framework_enthusiast -> "langchain" appears in 5.52% but 100% are keyword-stuffers already
+#     recent_llm_only         crushed by the role-relevance gate; a content-based detector fires on
+#                             ~20% (non-AI engineers who merely mention LLM) -> false-positive trap,
+#                             same failure mode as the rejected skill_outlasts_career honeypot check.
 NEGATIVE_CONCEPTS = {
-    "title_chaser": "frequent <1.5yr job hops climbing the title ladder",
-    "framework_enthusiast": "langchain-tutorial / demo-only AI exposure",
-    "services_only": "entire career at consulting/services firms",
-    "cv_speech_only": "primary expertise CV/speech/robotics without NLP/IR",
-    "research_only": "pure research, no production deployment",
-    "recent_llm_only": "AI experience only recent (<12mo) LangChain+OpenAI, no pre-LLM ML",
-    "stale_no_prod_code": "senior with no production code in 18 months",
+    "title_chaser": "frequent <1.5yr job hops climbing the title ladder",        # implemented
+    "services_only": "entire career at consulting/services firms",              # implemented
+    "cv_speech_only": "primary expertise CV/speech/robotics without NLP/IR",    # implemented
+    "framework_enthusiast": "langchain-tutorial / demo-only AI exposure",       # absent: ⊂ stuffers
+    "research_only": "pure research, no production deployment",                 # absent in pool
+    "recent_llm_only": "AI experience only recent (<12mo) LangChain+OpenAI, no pre-LLM ML",  # absent
+    "stale_no_prod_code": "senior with no production code in 18 months",        # absent in pool
 }
 
 # Component weights for the final relevance score (sum to 1.0). Provisional; tuned in Slice 3.
@@ -152,12 +167,29 @@ def role_relevance(title: str) -> float:
     return best
 
 
+# Canonical semantic query: a FAITHFUL, requirement-only extract of the real JD (docs/jd_text.md),
+# using the JD's own words from the "What you'd actually be doing" / "Things you absolutely need" /
+# "like to have" / "ideal candidate" sections. Deliberately POSITIVE-only: the bi-encoder and
+# cross-encoder match candidates against what the role *wants*; the JD's negatives ("do NOT want",
+# disqualifiers) are handled by the structured rubric/penalties, not the embedding query (putting
+# "we do NOT want X" in a query pollutes similarity — the model would match candidates TO X). The
+# hackathon-meta and culture/"vibe" prose is excluded for the same reason. Provenance: docs/jd_text.md.
+# NOTE (ablation, see PROJECT_LOG): a longer *verbatim* version of this query that enumerated every
+# tool name (LoRA/QLoRA/PEFT/BGE/E5/Pinecone/Weaviate/Qdrant/Milvus/...) was tested and REJECTED. On
+# the bge-small bi-encoder it triggered surface tool-name matching: it marginally sharpened the top-10
+# but polluted the top-50/100 with juniors/specialists who merely *list* those tokens while doing
+# forecasting/fraud/CV (top-100 ranking-work 98->53, juniors 3->20). This distilled, gestalt-focused
+# query — the JD's core "what you'd be doing" + must-haves in prose, NO tool enumeration, NO
+# nice-to-haves — preserves the strong top-10 AND a clean tail. Provenance: docs/jd_text.md.
+JD_QUERY_TEXT = (
+    "Senior AI Engineer at a product company who owns the intelligence layer: the ranking, retrieval, "
+    "and matching systems that decide what recruiters see when they search for candidates. Has shipped "
+    "end-to-end embeddings-based retrieval, semantic search, hybrid retrieval, and ranking or "
+    "recommendation systems to real users at meaningful scale, and designs rigorous evaluation for "
+    "ranking systems (NDCG, MRR, MAP, A/B testing). Strong Python, NLP, and information retrieval."
+)
+
+
 def jd_query_text() -> str:
-    """Canonical JD query string for semantic matching (Slice 2 embeddings)."""
-    return (
-        "Senior AI engineer for a product company building production embeddings-based retrieval, "
-        "semantic search, ranking and recommendation systems at scale. Strong Python. Vector databases "
-        "and hybrid search (FAISS, Elasticsearch, Pinecone). Designing evaluation frameworks for ranking "
-        "(NDCG, MRR, MAP, A/B testing). NLP and information retrieval. LLM fine-tuning and RAG. "
-        "Shipped end-to-end search/ranking/recommendation to real users."
-    )
+    """Canonical JD query string for semantic matching (precompute embeddings + cross-encoder)."""
+    return JD_QUERY_TEXT
