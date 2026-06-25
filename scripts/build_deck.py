@@ -103,15 +103,15 @@ CONTENT = {
               "rank.py reads cached JSON."),
     ],
     5: [
-        ("h", "How ranking decisions are explained"),
-        ("b", "Every candidate carries a component breakdown + relevance parts (lexical / semantic / "
-              "cross-encoder) and a 1-2 sentence reasoning string, shown in the demo UI."),
-        ("h", "Preventing hallucinations / unsupported justifications"),
-        ("b", "Reasoning is templated STRICTLY from real profile facts - no LLM in the output path - so a "
-              "claim cannot reference anything not in the profile. Honest concerns stated; tone matches rank."),
-        ("h", "Handling inconsistent / suspicious profiles"),
-        ("b", "Honeypot/impossibility filter (e.g., expert skill with 0 months used; duration > career span). "
-              "Calibrated to 65 impossible profiles with 0 false positives; 0 reach the top-100."),
+        ("h", "How decisions are explained"),
+        ("b", "Each candidate shows a component breakdown + relevance parts (lexical / semantic / "
+              "cross-encoder) and a 1-2 sentence reasoning."),
+        ("h", "No hallucinations"),
+        ("b", "Reasoning is templated strictly from real profile facts (no LLM), so it cannot cite anything "
+              "not in the profile; tone matches rank."),
+        ("h", "Suspicious profiles"),
+        ("b", "Honeypot filter (e.g. 'expert' skill with 0 months used). 65 flagged, 0 false positives, "
+              "0 reach the top-100."),
     ],
     6: [
         ("h", "Complete workflow: JD input -> ranked output"),
@@ -230,6 +230,45 @@ def footer(slide, num, total=11):
     rr = pr.add_run(); rr.text = f"{num:02d} / {total}"; style(rr, 8, MUTE)
 
 
+def console_box(slide, x, y, w, h, lines):
+    """A dark 'terminal' card showing real command output (evidence)."""
+    bx = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    bx.fill.solid(); bx.fill.fore_color.rgb = RGBColor(0x0F, 0x14, 0x20)
+    bx.line.color.rgb = RGBColor(0x2A, 0x33, 0x45); bx.line.width = Pt(0.75); bx.shadow.inherit = False
+    tf = bx.text_frame; tf.word_wrap = True; tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    tf.margin_left = tf.margin_right = Inches(0.18)
+    tf.margin_top = tf.margin_bottom = Inches(0.1)
+    first = True
+    for kind, text in lines:
+        p = tf.paragraphs[0] if first else tf.add_paragraph(); first = False
+        no_bullet(p, marL=0.0); p.line_spacing = 1.12; p.space_after = Pt(2)
+        r = p.add_run(); r.text = text
+        r.font.name = "Consolas"; r.font.size = Pt(10)
+        r.font.color.rgb = RGBColor(0x7E, 0xE7, 0x9A) if kind == "cmd" else RGBColor(0xCE, 0xD6, 0xE3)
+    return bx
+
+
+def image_panel(slide, path, x, y, w, h, caption=None):
+    """Place an image fit to (w,h) box, top-aligned and centered, with a caption + border."""
+    from PIL import Image as _I
+    iw, ih = _I.open(path).size
+    scale = min(w / (iw / 96.0), h / (ih / 96.0))  # not exact dpi; use aspect fit below
+    ar = iw / ih
+    draw_w = h * ar
+    if draw_w > w:
+        draw_w, draw_h = w, w / ar
+    else:
+        draw_h = h
+    cx = x + (w - draw_w) / 2
+    if caption:
+        cap = slide.shapes.add_textbox(Inches(x), Inches(y - 0.32), Inches(w), Inches(0.3))
+        rc = cap.text_frame.paragraphs[0]; rc.alignment = PP_ALIGN.CENTER
+        rr = rc.add_run(); rr.text = caption; style(rr, 10, HEAD, bold=True)
+    pic = slide.shapes.add_picture(path, Inches(cx), Inches(y), height=Inches(draw_h))
+    pic.line.color.rgb = BORDER; pic.line.width = Pt(0.75)
+    return pic
+
+
 def stat_card(slide, x, y, w, h, number, lab):
     c = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
     c.fill.solid(); c.fill.fore_color.rgb = CARD
@@ -332,16 +371,18 @@ def draw_results(slide):
     y, h, w, gap, x0 = 1.6, 1.18, 2.13, 0.21, 0.45
     for i, (num, lab) in enumerate(stats):
         stat_card(slide, x0 + i * (w + gap), y, w, h, num, lab)
-    content_panel(slide, 0.45, 3.06, 9.1, 1.92)
-    tb = slide.shapes.add_textbox(Inches(0.78), Inches(3.24), Inches(8.5), Inches(1.6))
-    fill_body(tb.text_frame, [
-        ("b", "Top-10 are senior product-company retrieval/ranking/NLP engineers (Meta, Apple, Netflix, "
-              "Zomato, Paytm, Razorpay...), 5.9-7.9 yrs - no honeypots, stuffers or juniors."),
-        ("b", "Validator passes (100 rows, ranks 1-100, non-increasing, id tie-break); runs in ~190s, "
-              "CPU-only, offline, <16 GB - the only GPU step is offline precompute."),
-        ("note", "Ground truth is hidden - method validated by a 3-way query ablation + full-100k "
-                 "negative calibration (docs/09)."),
+    console_box(slide, 0.45, 3.04, 9.1, 1.5, [
+        ("cmd", "$ just check        # rank.py -> submission.csv, then validate"),
+        ("out", "Scored 100,000 candidates (65 honeypots filtered) in 186.8s; top score 1.03, cutoff 0.77"),
+        ("out", "Wrote 100 ranked candidates to submission.csv     Submission is valid."),
+        ("cmd", "$ uv run python scripts/quality_proxy.py submission.csv"),
+        ("out", "top-100:  in-band 83/100   ranking-work 97/100   juniors 1/100   available 92/100"),
     ])
+    note = slide.shapes.add_textbox(Inches(0.5), Inches(4.64), Inches(9.0), Inches(0.32))
+    rn = note.text_frame.paragraphs[0].add_run()
+    rn.text = ("Top-10: senior product-company retrieval/ranking/NLP engineers (Meta, Apple, Netflix, "
+               "Zomato, Paytm, Razorpay). Ground truth hidden - validated by ablation + calibration (docs/09).")
+    style(rn, 9, MUTE, italic=True)
 
 
 def panel_body(slide, items, x=0.78, y=1.64, w=8.45, h=3.25):
@@ -375,19 +416,19 @@ def main():
 
         if n == 8:
             draw_results(slide)
-        elif n == 10:
+        elif n in (5, 10):
             content_panel(slide, x=0.45, y=1.52, w=5.35, h=3.42)
-            panel_body(slide, items, x=0.78, y=1.72, w=4.75, h=3.05)
-            shot = Path("docs/images/ui_hero.png")
-            if shot.exists():
-                cap = slide.shapes.add_textbox(Inches(6.0), Inches(1.62), Inches(3.6), Inches(0.3))
-                rc = cap.text_frame.paragraphs[0].add_run()
-                rc.text = "Live demo dashboard  ·  just serve"; style(rc, 10, HEAD, bold=True)
-                pic = slide.shapes.add_picture(str(shot), Inches(6.0), Inches(1.98), width=Inches(3.55))
-                pic.line.color.rgb = BORDER; pic.line.width = Pt(0.75)
-                url = slide.shapes.add_textbox(Inches(6.0), Inches(4.18), Inches(3.6), Inches(0.3))
-                ru = url.text_frame.paragraphs[0].add_run()
-                ru.text = "github.com/tsathya98/redrob-candidate-ranker"; style(ru, 8.5, MUTE)
+            panel_body(slide, items, x=0.78, y=1.64, w=4.75, h=3.25)
+            if n == 5:
+                image_panel(slide, "docs/images/ui_detail.png", 6.0, 1.84, 3.5, 3.1,
+                            caption="Explainability in the demo UI")
+            else:  # n == 10
+                image_panel(slide, "docs/images/ui_leaderboard.png", 6.0, 1.84, 3.5, 2.92,
+                            caption="Ranked output (live demo)")
+                url = slide.shapes.add_textbox(Inches(6.0), Inches(4.84), Inches(3.5), Inches(0.3))
+                up = url.text_frame.paragraphs[0]; up.alignment = PP_ALIGN.CENTER
+                ur = up.add_run(); ur.text = "github.com/tsathya98/redrob-candidate-ranker"
+                style(ur, 8.5, MUTE)
         else:
             content_panel(slide)
             panel_body(slide, items)
