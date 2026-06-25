@@ -47,7 +47,7 @@ def bullet(p, char, marL, indent, color="3730A3"):
     pPr.append(pPr.makeelement(qn("a:buFont"), {"typeface": "Arial"}))
     pPr.append(pPr.makeelement(qn("a:buChar"), {"char": char}))
 
-TEMPLATE = Path("submission/Idea Submission Template _ Redrob.pptx")
+TEMPLATE = Path("submission/Idea_Submission_Template_Redrob.pptx")
 OUT = Path("submission/Redrob_Idea_Submission.pptx")
 
 BODY = RGBColor(0x1F, 0x29, 0x37)   # ink / body text

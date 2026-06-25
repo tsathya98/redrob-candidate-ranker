@@ -46,3 +46,5 @@ submission/*.pptx
 # ranked output is a deliverable uploaded to the portal — never commit to the PUBLIC repo
 submission/*.xlsx
 submission/*.csv
+previous_submissions
+submission/previous_submissions/
