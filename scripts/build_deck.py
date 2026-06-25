@@ -402,7 +402,8 @@ def main():
         for prefix, val in TITLE_FIELDS.items():
             if sh.text_frame.text.strip().startswith(prefix):
                 tf = sh.text_frame; tf.word_wrap = True; tf.clear()
-                r = tf.paragraphs[0].add_run(); r.text = f"{prefix} : {val}"
+                p = tf.paragraphs[0]; p.line_spacing = 1.2   # avoid wrapped-line overlap
+                r = p.add_run(); r.text = f"{prefix} : {val}"
                 style(r, 12 if prefix != "Problem Statement" else 11, BODY,
                       bold=(prefix != "Problem Statement"))
 
