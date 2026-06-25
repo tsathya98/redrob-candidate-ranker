@@ -81,16 +81,16 @@ All ten: senior product-company retrieval/ranking/NLP roles, in 5–9y band, Ind
 
 | # | Candidate | Title @ Company | YoE | Why it fits the JD |
 |---|---|---|---|---|
-| 1 | CAND_0046525 | Senior ML Engineer @ Genpact AI | 6.1 | keyword→embedding search migration over 30M+ corpus; ranker variants + A/B |
-| 2 | CAND_0018499 | Senior ML Engineer @ Zomato | 7.2 | RAG ranking pipeline @50M q/mo; BM25+dense hybrid; LoRA/QLoRA fine-tuning |
-| 3 | CAND_0077337 | Staff ML Engineer @ Paytm | 7.0 | shipped prod recsys to live A/B; large-scale semantic search migration |
-| 4 | CAND_0081846 | Lead AI Engineer @ Razorpay | 6.7 | RAG ranking @50M q/mo; semantic search over 35M items; learning-to-rank |
-| 5 | CAND_0064326 | Search Engineer @ Sarvam AI | 7.6 | search/retrieval specialist at a product AI company |
-| 6 | CAND_0006567 | Senior AI Engineer @ Meta | 7.9 | IR at scale; search & discovery end-to-end; personalization infra |
-| 7 | CAND_0011687 | Senior NLP Engineer @ Niramai | 7.8 | end-to-end ranking: fine-tuned BGE-large → vector search; PEFT |
-| 8 | CAND_0002025 | Senior AI Engineer @ Apple | 5.9 | prod recsys offline→A/B in 5 months; FAISS/OpenSearch/Weaviate |
-| 9 | CAND_0050454 | AI Engineer @ Rephrase.ai | 6.8 | applied AI at a product company; retrieval/ranking evidence |
-| 10 | CAND_0071974 | Senior AI Engineer @ Netflix | 7.8 | end-to-end ranking pipeline; embeddings + vector DB; learning-to-rank |
+| 1 | CAND_xxxxxxx | Senior ML Engineer @ Genpact AI | 6.1 | keyword→embedding search migration over 30M+ corpus; ranker variants + A/B |
+| 2 | CAND_xxxxxxx | Senior ML Engineer @ Zomato | 7.2 | RAG ranking pipeline @50M q/mo; BM25+dense hybrid; LoRA/QLoRA fine-tuning |
+| 3 | CAND_xxxxxxx | Staff ML Engineer @ Paytm | 7.0 | shipped prod recsys to live A/B; large-scale semantic search migration |
+| 4 | CAND_xxxxxxx | Lead AI Engineer @ Razorpay | 6.7 | RAG ranking @50M q/mo; semantic search over 35M items; learning-to-rank |
+| 5 | CAND_xxxxxxx | Search Engineer @ Sarvam AI | 7.6 | search/retrieval specialist at a product AI company |
+| 6 | CAND_xxxxxxx | Senior AI Engineer @ Meta | 7.9 | IR at scale; search & discovery end-to-end; personalization infra |
+| 7 | CAND_xxxxxxx | Senior NLP Engineer @ Niramai | 7.8 | end-to-end ranking: fine-tuned BGE-large → vector search; PEFT |
+| 8 | CAND_xxxxxxx | Senior AI Engineer @ Apple | 5.9 | prod recsys offline→A/B in 5 months; FAISS/OpenSearch/Weaviate |
+| 9 | CAND_xxxxxxx | AI Engineer @ Rephrase.ai | 6.8 | applied AI at a product company; retrieval/ranking evidence |
+| 10 | CAND_xxxxxxx | Senior AI Engineer @ Netflix | 7.8 | end-to-end ranking pipeline; embeddings + vector DB; learning-to-rank |
 
 No honeypots, no keyword-stuffers, no juniors, no out-of-band candidates in the top-10.
 

@@ -2,11 +2,23 @@
 
 Our submission for the **Hack2Skill × RedRob Data & AI Challenge (Track 01)**: rank the top-100 best-fit
 candidates from a 100,000-candidate pool for the *Senior AI Engineer (Founding Team)* job description —
-reasoning about contextual + behavioral fit, not keyword overlap.
+reasoning about **contextual + behavioral fit, not keyword overlap**.
 
-> **Status:** Ranker built (Slice 2 — semantic embeddings + cross-encoder rerank). `rank.py` produces a
-> valid, **honeypot-free** top-100 in ~190s CPU/offline. See **`docs/09_results_and_observations.md`** for
-> results, the semantic-query ablation, the JD-negative calibration, and the manual top-10 audit (jury-facing).
+### Highlights
+- 🧠 **Retrieve → rerank → reason:** honeypot filter → JD-encoded gated rubric → semantic (bi-encoder) +
+  lexical relevance → **cross-encoder rerank** → bounded behavioral multiplier → fact-grounded reasoning.
+- 🛡️ **0 honeypots in the top-100** (the hard >10% disqualifier — cleared) via a calibrated
+  impossibility filter (65 flagged pool-wide, 0 false positives).
+- ⚡ **CPU-only, offline, ~190s** for the full 100k (≤5 min / ≤16 GB) — heavy models run *offline* because
+  the JD is fixed; `rank.py` only reads cached artifacts (**stdlib-only**).
+- 🚫 **Substance over keywords:** relevance scores what a candidate *built* (career history) and **excludes
+  the skills list**, so keyword-stuffers don't rank; an engineering-role gate sinks "Marketing Manager + 9 AI skills".
+- 🔬 **Decisions by measurement, not assumption:** the semantic query was chosen via a 3-way ablation and the
+  JD's negatives via a full-100k calibration — see `docs/09`.
+
+> **👩‍⚖️ Reviewers, start here:** **`docs/09_results_and_observations.md`** (results, ablation, calibration,
+> top-10 audit) · the approach deck **`submission/Redrob_Idea_Submission.pdf`** · the iteration trail
+> **`docs/PROJECT_LOG.md`** · reproduce with `just check` (rank + validate).
 
 ## Results & observations (for reviewers)
 
@@ -74,16 +86,16 @@ Reasoning strings are templated from real profile facts, so they cannot hallucin
 ## Repository layout
 
 ```
-docs/                     Challenge understanding + design (read 00 -> 05)
-  00_challenge_overview.md
-  01_job_description_analysis.md
-  02_dataset_and_signals.md
-  03_traps_and_honeypots.md
-  04_scoring_and_submission.md
-  05_approach_and_roadmap.md
-  PROJECT_LOG.md          Chronological project journal (decisions, experiments, results)
-src/                      Ranking package (data_loader, jd_profile, honeypot, features, scoring, reasoning, rank)
-requirements.txt          Dependencies (CPU-only, offline)
+docs/                     Challenge understanding + design (read 00 -> 09)
+  00_challenge_overview.md … 08_demo_ui.md
+  09_results_and_observations.md   Results, semantic-query ablation, negative calibration, top-10 audit
+  jd_text.md                       Verbatim JD (provenance for the semantic query)
+  PROJECT_LOG.md                   Chronological project journal (decisions, experiments, results)
+src/                      Ranking package: data_loader · jd_profile · honeypot · features · scoring · reasoning · rank.py
+scripts/                  precompute (embeddings+reranker) + analysis: quality_proxy · audit_candidates · calibrate_negatives · build_deck · csv_to_xlsx
+app/ + frontend/          Demo sandbox: FastAPI backend + Vite/React UI (single Docker image)
+submission/               Submission assets: approach deck (PDF) + DECK_CONTENT.md (ranked output / decks are git-ignored)
+requirements.txt          Ranker deps (CPU-only, offline; ranker itself is stdlib-only)
 submission_metadata.yaml  Portal metadata (mirrors submission spec)
 ```
 

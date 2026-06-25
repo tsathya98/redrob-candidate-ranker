@@ -5,7 +5,7 @@ The manual audit is our best relevance proxy in the absence of a ground truth: r
 profiles behind the top ranks and check they are genuine fits (not stuffers / honeypots / juniors).
 
 Usage:
-  uv run python scripts/audit_candidates.py CAND_0046525 CAND_0018499 ...
+  uv run python scripts/audit_candidates.py CAND_xxxxxxx CAND_xxxxxxx ...
   # audit the current top-10:
   awk -F, 'NR>1 && NR<=11 {print $1}' submission.csv | xargs uv run python scripts/audit_candidates.py
 """

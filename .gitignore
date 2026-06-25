@@ -42,3 +42,7 @@ __MACOSX/
 orientation.md
 # --- submission deck (organizer template / filled deck): keep local, upload to portal) ---
 submission/*.pptx
+
+# ranked output is a deliverable uploaded to the portal — never commit to the PUBLIC repo
+submission/*.xlsx
+submission/*.csv
