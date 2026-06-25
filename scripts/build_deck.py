@@ -149,7 +149,7 @@ CONTENT = {
         ("b", "Ranked output: submission.xlsx (top-100)."),
         ("b", "This deck (PDF): approach, methodology, results."),
         ("b", "README + docs/00-09 + PROJECT_LOG (iteration trail)."),
-        ("note", "Live demo: just serve  or  just docker-run."),
+        ("b", "Live sandbox: hosted Hugging Face Docker Space (also: just serve / docker-run)."),
     ],
     # 11 (closing) - left as the template's clean "THANK YOU" branded slide (don't overwrite).
 }
@@ -427,8 +427,9 @@ def main():
                             caption="Ranked output (live demo)")
                 url = slide.shapes.add_textbox(Inches(6.0), Inches(4.84), Inches(3.5), Inches(0.3))
                 up = url.text_frame.paragraphs[0]; up.alignment = PP_ALIGN.CENTER
-                ur = up.add_run(); ur.text = "github.com/tsathya98/redrob-candidate-ranker"
-                style(ur, 8.5, MUTE)
+                ur = up.add_run()
+                ur.text = "live: tsathya98-redrob-candidate-ranker.hf.space"
+                style(ur, 8.5, HEAD, bold=True)
         else:
             content_panel(slide)
             panel_body(slide, items)

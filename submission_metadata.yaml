@@ -20,8 +20,8 @@ team_members:
 # ============================================================================
 # Code and reproducibility
 # ============================================================================
-github_repo: "TODO-https://github.com/USER/REPO"
-sandbox_link: "TODO-hosted-sandbox-url"   # HF Docker Space (Dockerfile ready) — deploy then fill; see docs/08
+github_repo: "https://github.com/tsathya98/redrob-candidate-ranker"
+sandbox_link: "https://huggingface.co/spaces/tsathya98/redrob-candidate-ranker"   # HF Docker Space (live)
 reproduce_command: "just rank   # = uv run python src/rank.py --candidates data/candidates.jsonl --out submission.csv (ranker is stdlib-only)"
 
 # ============================================================================

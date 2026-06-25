@@ -16,6 +16,8 @@ reasoning about **contextual + behavioral fit, not keyword overlap**.
 - 🔬 **Decisions by measurement, not assumption:** the semantic query was chosen via a 3-way ablation and the
   JD's negatives via a full-100k calibration — see `docs/09`.
 
+> **🟢 Live sandbox:** **https://huggingface.co/spaces/tsathya98/redrob-candidate-ranker** (Hugging Face Docker Space)
+>
 > **👩‍⚖️ Reviewers, start here:** **`docs/09_results_and_observations.md`** (results, ablation, calibration,
 > top-10 audit) · the approach deck **`submission/Redrob_Idea_Submission.pdf`** · the iteration trail
 > **`docs/PROJECT_LOG.md`** · reproduce with `just check` (rank + validate).

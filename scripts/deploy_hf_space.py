@@ -24,7 +24,7 @@ colorTo: blue
 sdk: docker
 app_port: 7860
 pinned: false
-short_description: Intelligent candidate discovery & ranking (Hack2Skill x Redrob)
+short_description: Intelligent candidate discovery & ranking
 ---
 
 # Redrob Intelligent Candidate Discovery -- live demo
