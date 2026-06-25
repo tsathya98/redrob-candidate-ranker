@@ -1,0 +1,37 @@
+# --- Challenge data bundle (large; do NOT commit) ---
+candidates.jsonl
+candidates.jsonl.gz
+*.jsonl
+*.jsonl.gz
+# NOTE: brackets are glob character-classes in gitignore — escape them.
+\[PUB\] India_runs_data_and_ai_challenge/
+\[PUB\] India_runs_data_and_ai_challenge.zip
+*.zip
+old/
+
+# --- Precomputed / intermediate artifacts (regenerate via scripts) ---
+artifacts/
+embeddings/
+*.npy
+*.faiss
+*.pkl
+*.index
+
+# --- Generated submissions (keep the code, not the output) ---
+submission*.csv
+!sample_submission.csv
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+
+# --- OS / editor ---
+.DS_Store
+__MACOSX/
+.vscode/
+.idea/
