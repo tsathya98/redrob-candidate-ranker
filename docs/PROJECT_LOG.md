@@ -43,3 +43,39 @@ challenge grades at Stage 4.
 **Next steps (Phase 1):**
 - Implement `data_loader.iter_candidates` + `candidate_text_blob`; decide streaming vs full materialization
   within 16 GB. Then Phase 2: `honeypot.py` checks, calibrate to flag ~80 with no false positives.
+
+---
+
+## 2026-06-25 — Literature survey + prior-work review
+
+**Goal:** Ground the design in published methods and salvage reusable assets from a prior project (`old/`).
+
+**Done:**
+- Reviewed `old/`: `visualCalibrationReport.html` is a reusable **role-calibration rubric** pattern
+  (capability map + weighted/gated rubric + evidence-confidence model). Documented in `docs/07`. Other old/
+  files (mock-interview spec, entitlements notes, xlsx/png) are not relevant.
+- Ran a deep-research literature survey (5 angles, 23 sources, 99 claims → 25 verified → **21 confirmed,
+  4 refuted**). Wrote `docs/06_literature_survey.md` with citations; folded decisions into `docs/05`.
+
+**Key validated decisions (see docs/06):**
+- **Retrieve-and-rerank** architecture confirmed (SBERT). Our pipeline shape is correct.
+- **Precomputed bi-encoder embeddings + cosine** for 100k-scale CPU matching; default embedder
+  **all-MiniLM-L6-v2 (384-d)**, also benchmark BGE/E5/GTE-small.
+- **Embeddings alone are a weak resume↔JD signal** (conSultantBERT) → keep the structured/rules layer; rely on
+  modern instruction-tuned embedders + good query/text construction (we can't fine-tune: no labels/time).
+- **No LTR, no LLM at inference** — we have no relevance labels and no click logs; LLM explanation layers
+  aren't verifiably faithful. Use **unsupervised RRF (k≈60) + a white-box weighted utility** (JobMatchAI
+  design, Cormack RRF). Refuted: "RRF beats weighted fusion" → choose fusion empirically.
+- **JD hand-encoded as a gated rubric** (docs/07), not NER (NER only ~72% F).
+- **Evaluate** on a hand-built archetype relevance set (NDCG@k/MAP/P@k) + manual top-50 audit.
+
+**Literature GAPS = our original contributions (interview talking points):**
+- Adversarial/honeypot/keyword-stuffer detection — no reliable source → our rule-based consistency filter.
+- Must/nice-to-have rubric modeling — not evidenced → our calibration rubric (docs/07).
+- Faithful non-LLM explanations — only candidate approach was refuted → our templated-from-facts reasoning.
+
+**Caution:** JobMatchAI's benchmark numbers and "LLM can't hallucinate a ranking" guarantee were refuted —
+cite its *design*, not its results.
+
+**Next steps:** unchanged — Phase 1 (data loader) then Phase 2 (honeypot filter). Embedder benchmarking lands
+in Phase 4; fusion (RRF vs weighted) settled on archetypes in Phase 4/8.

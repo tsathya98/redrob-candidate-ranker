@@ -3,6 +3,15 @@
 How we turn the understanding in `00`–`04` into a working, explainable, CPU-only ranker — and the phased plan
 to build it.
 
+> **Grounding:** the architecture below is validated by the literature survey (`docs/06_literature_survey.md`)
+> and reuses the role-calibration rubric from prior work (`docs/07_reusable_prior_work.md`). Key external
+> confirmations: retrieve-and-rerank is canonical (SBERT); precomputed bi-encoder embeddings make 100k-scale
+> CPU matching feasible; **embeddings alone are a weak resume↔JD signal** → keep the structured/rules layer;
+> **no labels/click-logs → no LTR, no LLM at inference** → unsupervised RRF + a white-box weighted utility
+> (JobMatchAI design; Cormack RRF). Adversarial-profile detection, must/nice-to-have rubrics, and faithful
+> non-LLM reasoning are literature *gaps* — our honeypot filter, calibration rubric, and templated reasoning
+> are our original contributions.
+
 ## Design principles (derived from the docs)
 
 1. **Substance over keywords** — score what career descriptions *show*, not skill-array length.
@@ -53,13 +62,21 @@ candidates.jsonl
 - **Behavioral modifier** encodes "actually hireable."
 - All are CPU-friendly and offline once embeddings are precomputed.
 
-### Candidate model selection (to firm up in build)
+### Candidate model selection (literature-backed — docs/06)
 
-- Embedding model: a small CPU-friendly sentence-transformer (e.g. **BGE-small / E5-small / all-MiniLM**),
-  precomputed offline, vectors cached to disk; `rank.py` loads cached vectors (no model inference per run if
-  the JD is fixed — embed the JD once and dot-product against cached candidate vectors).
-- Optional learning-to-rank later (XGBoost) **only if** we can construct a trustworthy proxy label set —
-  otherwise stay rule-/score-based (safer with no ground-truth feedback).
+- **Embedding model:** a small modern instruction-tuned sentence-transformer. Default candidate
+  **`all-MiniLM-L6-v2` (384-d)** — the proven lightweight baseline in JobMatchAI; also benchmark
+  **BGE-small / E5-small / GTE-small**. Precomputed offline, vectors cached to disk; `rank.py` embeds the
+  fixed JD once and does cosine against cached candidate vectors (no per-candidate model inference at rank time).
+- **Fusion of semantic + lexical:** RRF (k≈60, unsupervised) *and/or* a weighted utility — **decided
+  empirically** on the archetype set; the survey refuted any claim that RRF universally beats weighted fusion.
+- **Re-ranker:** a **white-box weighted utility** over interpretable components (our scoring.py) — explainable
+  and label-free, mirroring JobMatchAI's design (cite the design, not its refuted benchmark numbers). A
+  cross-encoder re-rank of the top-K is *optional* and only if it fits the CPU budget.
+- **No learning-to-rank, no LLM at inference:** we have no relevance labels and no click logs, so LTR
+  (XGBoost LambdaMART) and counterfactual/propensity methods don't apply; LLM explanation layers aren't
+  verifiably faithful. Stay rule-/score-based with templated reasoning. (Revisit LTR only if engagement logs
+  ever exist — good interview talking point.)
 
 ## Phased roadmap
 
