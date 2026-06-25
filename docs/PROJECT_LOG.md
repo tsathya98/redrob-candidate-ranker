@@ -156,3 +156,17 @@ pool analytics, upload-your-own-sample, Slice-2 semantic sub-score surfacing.
 
 **Next steps:** user deploys the HF Space (fill `submission_metadata.sandbox_link`); then Slice 2 (precomputed
 embeddings) → Slice 3 (tuning), which flow through the UI automatically.
+
+---
+
+## 2026-06-25 — Tooling: uv + just (no pip)
+
+**Done (per user request):** standardized on **uv** (no pip anywhere) and added a cross-platform **`justfile`**
+(works on Windows PowerShell & Linux/macOS sh) as the professional task interface.
+- `justfile` recipes: `install`, `rank`, `validate`, `check`, `api`, `web`, `build-web`, `serve`,
+  `docker-build`, `docker-run` (all Python steps go through `uv run`/`uv pip`).
+- Dockerfile uses the official `uv` binary + `uv pip install --system` (no pip).
+- README/CLAUDE.md/docs/08/metadata updated to the `just` + `uv` workflow; `reproduce_command` = `just rank`.
+- Verified: `just --list` and `just validate` (→ "Submission is valid") run via `uv run`.
+
+**Next steps:** unchanged — deploy sandbox, then Slice 2 (embeddings).

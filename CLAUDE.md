@@ -115,22 +115,24 @@ data/
 
 ## 🛠️ Commands you'll use
 
+Toolchain: **uv** (Python, no pip) + **just** (cross-platform task runner) + npm. `just` lists all recipes.
+
 ```bash
-# Sanity-check the CLI (already wired)
-python src/rank.py --help
+just                 # list all recipes
+just install         # uv venv + uv pip install (backend) + npm install (frontend)
 
-# Validate a submission (run before every upload)
-python data/validate_submission.py submission.csv
+# Ranking (the scored deliverable)
+just rank            # -> submission.csv  (= uv run python src/rank.py --candidates data/candidates.jsonl --out ...)
+just validate        # validate submission.csv against the format rules
+just check           # rank then validate
 
-# The single reproduce command (the ranking pipeline is built across phases 1-7)
-python src/rank.py --candidates data/candidates.jsonl --out submission.csv
+# Demo UI (the sandbox) — see docs/08
+just api             # FastAPI backend at :8000 (also serves frontend/dist if built)
+just web             # React dev server at :5173 (proxies /api)
+just serve           # build UI + serve UI+API on :8000 (single origin)
+just docker-build && just docker-run   # containerized sandbox at :7860
 
-# Inspect the pool quickly (streaming; the file is large)
-wc -l data/candidates.jsonl
-
-# Demo UI (the sandbox): backend + frontend (see docs/08)
-pip install -r app/requirements.txt && uvicorn app.main:app --port 8000
-cd frontend && npm install && npm run dev          # http://localhost:5173 (proxies /api)
+# raw uv equivalents (no pip): uv venv · uv pip install -r app/requirements.txt · uv run <cmd>
 ```
 
 ## ✅ Pre-submission release gate (see docs/04 for the full checklist)

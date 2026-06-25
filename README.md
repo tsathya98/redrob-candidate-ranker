@@ -20,15 +20,38 @@ data/
 
 `data/` and `old/` are git-ignored.
 
-## Reproduce the submission (target interface)
+## Quickstart
+
+Toolchain: **[uv](https://github.com/astral-sh/uv)** (Python, no pip) + **[just](https://just.systems)**
+(cross-platform task runner, Windows & Linux/macOS) + npm (frontend UI).
 
 ```bash
-python src/rank.py --candidates data/candidates.jsonl --out submission.csv
-python data/validate_submission.py submission.csv
+just              # list all recipes
+just install      # uv venv + uv pip install (backend) + npm install (frontend)
+just check        # run the ranker -> submission.csv, then validate it
+just serve        # build the UI and serve UI + API at http://localhost:8000
 ```
 
-The ranking step runs **CPU-only, offline, ≤5 min, ≤16 GB** (embeddings precomputed offline). See
-`docs/04_scoring_and_submission.md` for full constraints.
+## Reproduce the submission
+
+```bash
+just rank         # -> submission.csv   (or: uv run python src/rank.py --candidates data/candidates.jsonl --out submission.csv)
+just validate     # checks the CSV against the challenge format rules
+```
+
+The ranker is **stdlib-only** and runs **CPU-only, offline, ≤5 min, ≤16 GB** (embeddings precomputed
+offline). See `docs/04_scoring_and_submission.md` for full constraints.
+
+## Demo UI (the sandbox)
+
+```bash
+just api          # FastAPI backend at http://localhost:8000
+just web          # React dev server at http://localhost:5173 (proxies /api)
+```
+
+A Vite + React + Tailwind dashboard that visualizes the ranking, score breakdowns, "reading between the
+lines" evidence, and honeypot/trap detection. See `docs/08_demo_ui.md`. Deploy as a single Hugging Face
+Docker Space (`just docker-build` / `just docker-run` for the local container).
 
 ## Approach (one paragraph)
 

@@ -22,7 +22,7 @@ team_members:
 # ============================================================================
 github_repo: "TODO-https://github.com/USER/REPO"
 sandbox_link: "TODO-hosted-sandbox-url"   # HF Docker Space (Dockerfile ready) — deploy then fill; see docs/08
-reproduce_command: "python src/rank.py --candidates data/candidates.jsonl --out submission.csv"
+reproduce_command: "just rank   # = uv run python src/rank.py --candidates data/candidates.jsonl --out submission.csv (ranker is stdlib-only)"
 
 # ============================================================================
 # Compute environment

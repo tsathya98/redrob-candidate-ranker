@@ -44,17 +44,28 @@ gracefully to an explanatory note when no `ANTHROPIC_API_KEY` is set).
 
 ## Run locally
 
+**With `just` (recommended — works on Windows & Linux/macOS):**
 ```bash
-# backend (serves API; also serves frontend/dist if built)
-pip install -r app/requirements.txt
-uvicorn app.main:app --port 8000
+just install      # uv venv + uv pip install (backend) + npm install (frontend)
+just api          # backend at http://localhost:8000  (uv run uvicorn)
+just web          # frontend dev at http://localhost:5173 (proxies /api)
+just serve        # production-style single origin: build UI, then serve UI+API on :8000
+just rank         # run the offline ranker -> submission.csv
+just validate     # validate the submission CSV
+```
+
+**Raw commands (uv only — no pip):**
+```bash
+# backend
+uv venv && uv pip install -r app/requirements.txt
+uv run uvicorn app.main:app --port 8000
 
 # frontend dev (hot reload, proxies /api -> :8000)
 cd frontend && npm install && npm run dev      # http://localhost:5173
 
 # production-style (single origin)
 cd frontend && npm run build                    # -> frontend/dist
-uvicorn app.main:app --port 8000                # http://localhost:8000 serves UI + API
+uv run uvicorn app.main:app --port 8000         # http://localhost:8000 serves UI + API
 ```
 
 ## Deploy as the sandbox (Hugging Face Docker Space)

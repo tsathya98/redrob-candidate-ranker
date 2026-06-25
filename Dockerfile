@@ -13,14 +13,17 @@ RUN npm run build
 
 # --- stage 2: python runtime ---
 FROM python:3.11-slim AS app
+# uv: fast, reproducible installs (https://github.com/astral-sh/uv)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
+    UV_NO_CACHE=1 \
+    UV_SYSTEM_PYTHON=1 \
     HF_HOME=/tmp/hf \
     PORT=7860
 WORKDIR /srv
 
 COPY app/requirements.txt ./app/requirements.txt
-RUN pip install -r app/requirements.txt
+RUN uv pip install --system -r app/requirements.txt
 
 # ranking package + service + demo sample
 COPY src/ ./src/
