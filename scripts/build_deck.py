@@ -416,20 +416,25 @@ def main():
 
         if n == 8:
             draw_results(slide)
-        elif n in (5, 10):
+        elif n == 5:
             content_panel(slide, x=0.45, y=1.52, w=5.35, h=3.42)
             panel_body(slide, items, x=0.78, y=1.64, w=4.75, h=3.25)
-            if n == 5:
-                image_panel(slide, "docs/images/ui_detail.png", 6.0, 1.84, 3.5, 3.1,
-                            caption="Explainability in the demo UI")
-            else:  # n == 10
-                image_panel(slide, "docs/images/ui_leaderboard.png", 6.0, 1.84, 3.5, 2.92,
-                            caption="LIVE on Hugging Face Space", cap_color=GREEN)
-                url = slide.shapes.add_textbox(Inches(6.0), Inches(4.84), Inches(3.5), Inches(0.3))
-                up = url.text_frame.paragraphs[0]; up.alignment = PP_ALIGN.CENTER
-                ur = up.add_run()
-                ur.text = "live: tsathya98-redrob-candidate-ranker.hf.space"
-                style(ur, 8.5, HEAD, bold=True)
+            image_panel(slide, "docs/images/ui_detail.png", 6.0, 1.84, 3.5, 3.1,
+                        caption="Explainability in the demo UI")
+        elif n == 10:
+            # full-page live-demo hero + a compact assets line
+            a = slide.shapes.add_textbox(Inches(0.4), Inches(1.46), Inches(9.2), Inches(0.3))
+            pa = a.text_frame.paragraphs[0]; pa.alignment = PP_ALIGN.CENTER
+            ra = pa.add_run()
+            ra.text = ("GitHub (public)    ·    ranked output XLSX    ·    approach deck (PDF)    ·    "
+                       "docs/00-09 + PROJECT_LOG")
+            style(ra, 10, BODY)
+            c = slide.shapes.add_textbox(Inches(0.4), Inches(1.78), Inches(9.2), Inches(0.3))
+            pc = c.text_frame.paragraphs[0]; pc.alignment = PP_ALIGN.CENTER
+            rc = pc.add_run()
+            rc.text = "LIVE on Hugging Face Space    ·    tsathya98-redrob-candidate-ranker.hf.space"
+            style(rc, 10.5, GREEN, bold=True)
+            image_panel(slide, "docs/images/ui_full.png", 1.5, 2.14, 7.0, 2.86)
         else:
             content_panel(slide)
             panel_body(slide, items)
