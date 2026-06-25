@@ -17,12 +17,18 @@ html, body, #root {
   height: 100%;
 }
 
+html, body {
+  background-color: var(--color-ink);   /* uniform dark base everywhere (no two-tone) */
+}
+
 body {
   margin: 0;
-  background:
-    radial-gradient(1200px 600px at 12% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
-    radial-gradient(1000px 500px at 100% 0%, rgba(33, 212, 253, 0.12), transparent 55%),
-    var(--color-ink);
+  /* subtle ambient glow anchored to the VIEWPORT (fixed) so it never bands across a tall/zoomed page */
+  background-image:
+    radial-gradient(1100px 560px at 15% -15%, rgba(124, 92, 255, 0.10), transparent 60%),
+    radial-gradient(900px 460px at 100% -12%, rgba(33, 212, 253, 0.06), transparent 55%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: #e7e9f3;
   font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;

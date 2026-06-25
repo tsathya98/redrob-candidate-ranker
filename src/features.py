@@ -145,12 +145,15 @@ def tenure_features(candidate: dict) -> dict:
 def behavioral_features(candidate: dict) -> dict:
     """Availability/quality signals from redrob_signals (docs/02). Handles -1 sentinels as 'unknown'."""
     s = candidate.get("redrob_signals", {})
+    # NOTE: notice_period_days = 0 is a VALID, excellent value (immediately available); only default
+    # to 180 when the field is genuinely missing. (`x or 180` would wrongly coerce 0 -> 180.)
+    nd = s.get("notice_period_days")
     return {
         "recruiter_response_rate": s.get("recruiter_response_rate", 0.0) or 0.0,
         "open_to_work": bool(s.get("open_to_work_flag")),
         "interview_completion_rate": s.get("interview_completion_rate", 0.0) or 0.0,
         "saved_by_recruiters_30d": s.get("saved_by_recruiters_30d", 0) or 0,
-        "notice_period_days": s.get("notice_period_days", 180) or 180,
+        "notice_period_days": 180 if nd is None else nd,
         "last_active_date": s.get("last_active_date"),
         "profile_completeness": s.get("profile_completeness_score", 0) or 0,
     }
