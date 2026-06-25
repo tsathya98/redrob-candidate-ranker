@@ -132,13 +132,13 @@ CONTENT = {
     11: [
         ("h", "We'd rather surface 10 great matches than 1000 maybes."),
         ("note", "- the JD's words, and our design goal."),
-        ("b", "Thank you.  Team: TODO  -  contact: TODO"),
+        ("b", "Thank you.   Team Argmax  ·  Sathya T"),
     ],
 }
 
 TITLE_FIELDS = {  # slide 1: prefix -> filled value
-    "Team Name": "TODO",
-    "Team Leader Name": "TODO",
+    "Team Name": "Argmax",
+    "Team Leader Name": "Sathya T",
     "Problem Statement": ("Rank the top-100 best-fit candidates from a 100,000-profile pool for the "
                           "Senior AI Engineer (Founding Team) @ Redrob AI role - contextual + behavioral "
                           "fit over keyword overlap, CPU-only and offline (<=5 min)."),
