@@ -17,7 +17,7 @@ from pptx.util import Emu, Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.oxml.ns import qn
 from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR, MSO_AUTO_SIZE
 
 
 def _pPr(p, marL=None, indent=None):
@@ -402,10 +402,11 @@ def main():
         for prefix, val in TITLE_FIELDS.items():
             if sh.text_frame.text.strip().startswith(prefix):
                 tf = sh.text_frame; tf.word_wrap = True; tf.clear()
+                tf.auto_size = MSO_AUTO_SIZE.NONE   # stop shrink-to-fit so all 3 labels stay 12pt
                 p = tf.paragraphs[0]; p.line_spacing = 1.2   # avoid wrapped-line overlap
-                r = p.add_run(); r.text = f"{prefix} : {val}"
-                style(r, 12 if prefix != "Problem Statement" else 11, BODY,
-                      bold=(prefix != "Problem Statement"))
+                # all three labels at the SAME size (matches the template); value in regular weight
+                rl = p.add_run(); rl.text = f"{prefix} : "; style(rl, 12, BODY, bold=True)
+                rv = p.add_run(); rv.text = val; style(rv, 12, BODY, bold=False)
 
     # content slides (2-6, 8, 9, 10)
     for n, items in CONTENT.items():
