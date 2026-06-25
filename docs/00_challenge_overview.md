@@ -31,6 +31,22 @@ profile fit against behavioral availability.
 
 ## The 5-stage evaluation pipeline (how submissions are filtered)
 
+```mermaid
+flowchart TD
+    Sub["Submission<br/>CSV + portal metadata + GitHub repo + sandbox"] --> S1["Stage 1 · Format validation<br/>validate_submission.py"]
+    S1 -->|any spec violation| X1["❌ auto-rejected"]
+    S1 -->|valid| S2["Stage 2 · Scoring (hidden GT)<br/>0.50·NDCG@10 + 0.30·NDCG@50 + 0.15·MAP + 0.05·P@10"]
+    S2 -->|below cutoff| X2["❌ eliminated"]
+    S2 -->|top-N| S3["Stage 3 · Code reproduction + honeypot check<br/>sandboxed: 5 min · 16 GB · CPU · no network"]
+    S3 -->|can't reproduce · honeypot >10% in top-100 · no repo| X3["❌ disqualified"]
+    S3 -->|reproducible · honeypot ≤10%| S4["Stage 4 · Manual review<br/>reasoning quality · methodology · git-history authenticity · code quality"]
+    S4 -->|failed checks · flat git history · LLM-only| X4["❌ eliminated"]
+    S4 -->|pass| S5["Stage 5 · Defend-your-work interview<br/>30-min call with Redrob engineering"]
+    S5 -->|can't defend / contradicts code| X5["❌ eliminated"]
+    S5 -->|pass| Win["🏆 Finalist"]
+```
+
+
 | Stage | What happens | What eliminates you |
 |------|---------------|---------------------|
 | 1. Format validation | `validate_submission.py` runs on every submission | Any spec violation (wrong rows, dup ranks, non-monotonic score, etc.) |

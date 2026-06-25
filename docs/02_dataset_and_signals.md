@@ -19,6 +19,62 @@ full-pool scan of `candidates.jsonl`.
 
 ## Candidate record structure (top-level)
 
+```mermaid
+classDiagram
+    class Candidate {
+        string candidate_id
+    }
+    class Profile {
+        string headline
+        string summary
+        float years_of_experience
+        string current_title
+        string current_company
+        string current_company_size
+        string current_industry
+        string location_country
+    }
+    class CareerHistory {
+        string company
+        string title
+        date start_date
+        date end_date
+        int duration_months
+        bool is_current
+        string description_what_they_built
+    }
+    class Education {
+        string institution
+        string degree
+        string field_of_study
+        int start_end_year
+        string tier_prestige
+    }
+    class Skill {
+        string name
+        string proficiency_beginner_to_expert
+        int endorsements
+        int duration_months
+    }
+    class RedrobSignals {
+        date last_active_date
+        bool open_to_work_flag
+        float recruiter_response_rate
+        int saved_by_recruiters_30d
+        float interview_completion_rate
+        int notice_period_days
+        bool willing_to_relocate
+        dict skill_assessment_scores
+        plus_15_more_of_23_signals
+    }
+    Candidate --> Profile
+    Candidate "1" --> "1..10" CareerHistory
+    Candidate "1" --> "0..5" Education
+    Candidate "1" --> "0..N" Skill
+    Candidate --> RedrobSignals
+```
+
+
 ```
 candidate_id        "CAND_XXXXXXX" (7 digits)  — unique, exists in candidates.jsonl
 profile             { anonymized_name, headline, summary, location, country,

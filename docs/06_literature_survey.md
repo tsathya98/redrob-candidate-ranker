@@ -23,6 +23,25 @@ mapped to *our* constraints (CPU-only, offline, ≤5 min, ~100k pool, no per-can
 
 ---
 
+## Reference architecture from the literature (retrieve → fuse → re-rank)
+
+```mermaid
+flowchart LR
+    Q["JD query<br/>(embedded once)"] --> R1["Dense retrieval<br/>bi-encoder cosine vs precomputed vectors"]
+    Q --> R2["Lexical retrieval<br/>BM25"]
+    P[("100k candidates<br/>precomputed embeddings + index")] --> R1
+    P --> R2
+    R1 --> F["Fuse ranked lists<br/>RRF (k≈60) and/or weighted"]
+    R2 --> F
+    F --> TK["Top-K shortlist"]
+    TK --> RR["Re-rank<br/>white-box weighted utility<br/>(+ cross-encoder optional, CPU-permitting)"]
+    RR --> OUT["Top-100 ranked + explanations"]
+```
+
+*Endorsed by SBERT (retrieve & re-rank), Cormack et al. (RRF), and JobMatchAI (white-box utility) — see
+findings below. We add our own honeypot filter, JD calibration rubric, and templated reasoning on top, since
+those are literature gaps.*
+
 ## Confirmed findings (with citations)
 
 ### A. Architecture: retrieve-and-rerank  ·  confidence: HIGH

@@ -23,6 +23,32 @@ to build it.
 
 ## Architecture — hybrid explainable pipeline (no per-candidate LLM calls)
 
+```mermaid
+flowchart TD
+    A["candidates.jsonl<br/>100k profiles"] --> B["data_loader.py<br/>stream-parse · normalize · build text blob"]
+    B --> C{"honeypot.py<br/>impossibility / consistency checks"}
+    C -->|impossible| Z["force to bottom<br/>(excluded from top-100)"]
+    C -->|clean| D["jd_profile.py<br/>JD as gated rubric + concept lexicon"]
+    D --> E["features.py<br/>extract structured features"]
+    E --> F1["A · Semantic relevance<br/>embeddings + BM25"]
+    E --> F2["B · Title / career fit<br/>eng role? built recsys/search? product co?"]
+    E --> F3["C · Experience band<br/>5-9 yrs (ideal 6-8)"]
+    E --> F4["D · Skill depth<br/>proficiency × endorsements × duration"]
+    E --> F5["E · Education / certs"]
+    F1 --> G
+    F2 --> G
+    F3 --> G
+    F4 --> G
+    F5 --> G
+    G["scoring.py<br/>weighted combine + JD hard-gates / soft-penalties"]
+    G --> H["× behavioral modifier<br/>availability signals (bounded 0.5–1.15)"]
+    H --> I["sort desc · tie-break candidate_id asc<br/>take top 100"]
+    I --> J["reasoning.py<br/>fact-grounded · varied · rank-consistent"]
+    J --> K["submission.csv<br/>candidate_id,rank,score,reasoning"]
+```
+
+Detailed, annotated view of the same flow:
+
 ```
 candidates.jsonl
    │
@@ -53,6 +79,31 @@ candidates.jsonl
    ▼  rank.py --candidates ... --out submission.csv   (single reproduce command)
 ```
 
+### Compute split — offline precompute vs the online ranking step
+
+The hard limit (≤5 min, ≤16 GB, CPU, no network) applies to the **`rank.py` step only**. Anything expensive
+(embedding 100k profiles, building the BM25 index) is done **once, offline**, and cached to disk; `rank.py`
+loads the cached artifacts and never re-embeds candidates or hits the network.
+
+```mermaid
+flowchart LR
+    subgraph offline["OFFLINE precompute (may exceed 5 min · run once)"]
+        direction TB
+        O1["embed 100k candidate blobs<br/>all-MiniLM-L6-v2"] --> O2[("cached vectors<br/>artifacts/embeddings.npy")]
+        O3["build BM25 index"] --> O4[("cached index<br/>artifacts/bm25")]
+    end
+    subgraph online["rank.py — ON THE CLOCK (≤5 min · CPU · no network)"]
+        direction TB
+        N0["load cached artifacts"] --> N2["embed fixed JD once<br/>cosine vs cached vectors"]
+        N0 --> N3["BM25 query"]
+        N2 --> N4["fuse + structured score + behavioral modifier"]
+        N3 --> N4
+        N4 --> N5["rank top-100 + reasoning + write CSV"]
+    end
+    O2 -.loaded by.-> N0
+    O4 -.loaded by.-> N0
+```
+
 ### Why hybrid (embeddings + lexical + structured + rules)
 
 - **Embeddings** find Tier-5s who phrase things plainly (semantic match on career descriptions).
@@ -77,6 +128,24 @@ candidates.jsonl
   (XGBoost LambdaMART) and counterfactual/propensity methods don't apply; LLM explanation layers aren't
   verifiably faithful. Stay rule-/score-based with templated reasoning. (Revisit LTR only if engagement logs
   ever exist — good interview talking point.)
+
+## Recommended execution — baseline-first vertical slices
+
+Rather than building every component fully before producing any output, build **thin end-to-end slices**: get a
+valid, honeypot-free CSV out the door first, then improve against it. This de-risks the format/compute
+constraints early and gives a measurable baseline (and mirrors the JD's "ship first, optimize later" ethos).
+
+```mermaid
+flowchart LR
+    S1["Slice 1 — Baseline (no embeddings)<br/>loader + honeypot + rules/lexical + reasoning → valid CSV<br/>gate: validator passes · 0 honeypots · runs in seconds"]
+    S2["Slice 2 — Semantic layer<br/>precompute embeddings + fuse + re-rank top-K<br/>gate: lift on archetype probes (catches plain-language fits)"]
+    S3["Slice 3 — Tune & validate<br/>calibrate honeypot threshold · tune weights/gates · audit top-50<br/>gate: clean manual audit · stable archetype scores"]
+    S4["Slice 4 — Delivery<br/>sandbox + metadata + README + timing<br/>gate: reproducible ≤5 min · sandbox live"]
+    S1 --> S2 --> S3 --> S4
+```
+
+The phase table below is the detailed component breakdown; the slices above are the order we actually build in
+(Slice 1 ≈ phases 1-3+5-7 at baseline quality, Slice 2 ≈ phase 4, Slice 3 ≈ phase 8, Slice 4 ≈ phase 9).
 
 ## Phased roadmap
 

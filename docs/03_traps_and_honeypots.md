@@ -90,6 +90,24 @@ as a release gate before any submission.
 
 ---
 
+## Per-candidate handling flow (how the four traps are resolved)
+
+```mermaid
+flowchart TD
+    C["Candidate profile"] --> H{"Internally consistent?<br/>(honeypot.py impossibility checks)"}
+    H -->|"No — impossible<br/>(expert@0mo, tenure > company age, date contradictions)"| HP["🚫 Trap 4 Honeypot<br/>force to bottom · assert 0 in top-100"]
+    H -->|Yes| T{"Engineering role +<br/>career evidence of building<br/>ranking/search/recsys?"}
+    T -->|"No — non-eng title<br/>with AI skills listed"| KS["⬇️ Trap 1 Keyword stuffer<br/>heavy down-weight (skills ≠ substance)"]
+    T -->|Yes| SEM["Score: semantic (career text) + structured"]
+    SEM --> PL["✅ Trap 2 Plain-language Tier-5<br/>caught by career-description embeddings,<br/>not buzzwords"]
+    PL --> BV{"Behavioral signals:<br/>active & responsive?"}
+    BV -->|"stale / low response"| DW["⬇️ Trap 3 Behavioral twin<br/>availability down-modifier separates twins"]
+    BV -->|"active"| UP["⬆️ full score retained"]
+    DW --> R["Final rank"]
+    UP --> R
+    KS --> R
+```
+
 ## Cross-cutting principle
 
 Every trap defends the same thesis: **read the profile, reason about substance, and weigh availability.**
