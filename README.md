@@ -91,6 +91,20 @@ strong candidates who don't use buzzwords), structured feature scoring (title/ca
 band, skill *depth*, education), and a bounded behavioral-availability multiplier from the 23 Redrob signals.
 Reasoning strings are templated from real profile facts, so they cannot hallucinate. Full rationale in `docs/`.
 
+## Assumptions
+
+- **The JD is fixed** for this challenge, so all heavy models (embeddings, cross-encoder) are computed
+  **offline once** and cached; `rank.py` only reads cached artifacts and stays CPU-only/offline.
+- **Compute limits bind the *ranking step* only** (`rank.py`: ≤5 min, ≤16 GB, CPU, no network); offline
+  precompute may use a GPU and longer wall-clock (per the spec).
+- **Ground truth is hidden** (no leaderboard), so quality is validated by proxies — manual top-N audit,
+  automated quality heuristics, honeypot rate, and ablations — not by a measured score (see `docs/09`).
+- **Honeypots are forced to tier 0**; our impossibility filter is calibrated to flag only genuinely
+  impossible profiles (0 false positives on the pool) — we do not special-case beyond that.
+- **The pool is synthetic**: the JD's "research-only / stale-architect / recent-LLM" disqualifiers do not
+  manifest as detectable populations here, so they are intentionally not penalized (calibrated, `docs/09`).
+- **`reasoning` is templated from data, not an LLM** — a deliberate choice to eliminate hallucination risk.
+
 ## Repository layout
 
 ```

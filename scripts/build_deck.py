@@ -62,8 +62,8 @@ CARD = RGBColor(0xFF, 0xFF, 0xFF)   # stat-card fill
 CONTENT = {
     2: [
         ("h", "What is your proposed solution?"),
-        ("b", "A hybrid, explainable, CPU-only ranking engine: honeypot filter → JD gated rubric → "
-              "semantic + lexical relevance → cross-encoder rerank → behavioral multiplier → "
+        ("b", "A hybrid, explainable, CPU-only ranking engine: honeypot filter -> JD gated rubric -> "
+              "semantic + lexical relevance -> cross-encoder rerank -> behavioral multiplier -> "
               "fact-grounded reasoning."),
         ("h", "What makes it different from keyword matching?"),
         ("b", "Substance over keywords: scores what candidates BUILT (career history); the skills list is "
@@ -79,25 +79,27 @@ CONTENT = {
         ("h", "Key requirements extracted from the JD"),
         ("b", "Must-have: production embeddings retrieval, vector/hybrid search, strong Python, ranking "
               "evaluation (NDCG/MRR/MAP/A-B)."),
-        ("b", "Ideal profile: 5–9 yrs, product company (not pure services/research), shipped an end-to-end "
+        ("b", "Ideal profile: 5-9 yrs, product company (not pure services/research), shipped an end-to-end "
               "ranking/search/recsys system, Pune/Noida."),
         ("b", "Negatives: services-only, CV/speech-without-NLP, title-chasers, recent-LLM-only."),
         ("h", "Evaluating fit beyond keyword matching"),
         ("b", "Career-evidence of retrieval/ranking work + an engineering-role gate ('Marketing Manager' "
-              "+ AI skills ≈ 0)."),
-        ("b", "Skill DEPTH (proficiency × endorsements/duration × assessments), not count; embeddings "
+              "+ AI skills ~ 0)."),
+        ("b", "Skill DEPTH (proficiency x endorsements/duration x assessments), not count; embeddings "
               "catch plain-language Tier-5s; 23 Redrob signals weigh availability."),
     ],
     4: [
-        ("h", "Retrieve → score → rerank"),
+        ("h", "Retrieve -> score -> rerank"),
         ("b", "Recall funnel: a fast structured score over all 100k keeps a top pool."),
         ("b", "Semantic: bge-small-en-v1.5 cosine to a distilled JD query, blended 50/50 with lexical "
               "concept matching."),
         ("b", "Rerank: bge-reranker-v2-m3 cross-encoder takes half-authority over the top tier "
               "(drives NDCG@10)."),
-        ("b", "Components: relevance .30, title/career .28, skill-depth .20, experience .12, education .10 "
-              "— × penalties (services/CV-speech/title-chaser/location) × behavioral (0.5–1.15)."),
-        ("b", "Final: score = fit × penalties × behavioral; tie-break by candidate_id. Models run offline; "
+        ("b", "Weighted components: relevance .30, title/career .28, skill-depth .20, experience .12, "
+              "education .10."),
+        ("b", "Then multiply by soft penalties (services/CV-speech/title-chaser/location) and a bounded "
+              "behavioral availability factor (0.5 to 1.15)."),
+        ("b", "Final: score = fit x penalties x behavioral; tie-break by candidate_id. Models run offline; "
               "rank.py reads cached JSON."),
     ],
     5: [
@@ -112,15 +114,15 @@ CONTENT = {
               "Calibrated to 65 impossible profiles with 0 false positives; 0 reach the top-100."),
     ],
     6: [
-        ("h", "Complete workflow: JD input → ranked output"),
-        ("b", "OFFLINE (GPU ok, one-time): embed the candidate pool + cross-encoder rerank → cache "
+        ("h", "Complete workflow: JD input -> ranked output"),
+        ("b", "OFFLINE (GPU ok, one-time): embed the candidate pool + cross-encoder rerank -> cache "
               "artifacts/*.json."),
-        ("b", "SCORED (rank.py, CPU/offline, ≤5 min): stream 100k → honeypot filter → component scoring "
-              "× behavioral multiplier → top-100 heap → fact-grounded reasoning → submission.csv."),
+        ("b", "SCORED (rank.py, CPU/offline, <=5 min): stream 100k -> honeypot filter -> component scoring "
+              "x behavioral multiplier -> top-100 heap -> fact-grounded reasoning -> submission.csv."),
         ("b", "Validate: data/validate_submission.py confirms format before upload."),
         ("note", "Full workflow diagram: docs/05_approach_and_roadmap.md"),
     ],
-    # 7 (System Architecture) is drawn as a native diagram — see draw_arch().
+    # 7 (System Architecture) is drawn as a native diagram - see draw_arch().
     8: [
         ("h", "Results demonstrating ranking quality"),
         ("b", "Validator passes (100 rows, ranks 1-100, scores non-increasing, tie-break by id)."),
@@ -149,7 +151,7 @@ CONTENT = {
         ("b", "README + docs/00-09 + PROJECT_LOG (iteration trail)."),
         ("note", "Live demo: just serve  or  just docker-run."),
     ],
-    # 11 (closing) — left as the template's clean "THANK YOU" branded slide (don't overwrite).
+    # 11 (closing) - left as the template's clean "THANK YOU" branded slide (don't overwrite).
 }
 
 TITLE_FIELDS = {  # slide 1: prefix -> filled value
@@ -185,7 +187,7 @@ def fill_body(tf, items):
             p.space_before = Pt(4); p.space_after = Pt(2)
             r = p.add_run(); r.text = text; style(r, 10, MUTE, italic=True)
         elif kind == "s":
-            bullet(p, "–", 0.55, -0.27, color="6B7280")
+            bullet(p, "-", 0.55, -0.27, color="6B7280")
             p.space_after = Pt(3)
             r = p.add_run(); r.text = text; style(r, 10.5, BODY)
         else:  # bullet
@@ -285,7 +287,7 @@ def label(slide, x, y, w, text, color, size=9):
 
 
 def draw_arch(slide):
-    # Row A — offline precompute
+    # Row A - offline precompute
     label(slide, 0.5, 1.58, 6.0, "1 · OFFLINE PRECOMPUTE  (GPU, one-time)", OFFLINE)
     a = ["100k\nprofiles", "Recall funnel\n(structured score)", "Bi-encoder\nbge-small\n(embeddings)",
          "Cross-encoder\nbge-reranker-v2-m3", "artifacts\n*.json\n(cache)"]
@@ -298,10 +300,10 @@ def draw_arch(slide):
             px = ax0 + (i - 1) * (aw + agap) + aw
             arrow(slide, px, ay + ah / 2, x, ay + ah / 2)
 
-    # Row B — scored ranking (rank.py)
-    label(slide, 0.35, 3.18, 3.4, "2 · SCORED RANKING — rank.py (CPU · offline · ≤5 min)", SCORED)
-    b = ["candidates\n.jsonl", "Honeypot\nfilter", "JD rubric + features\nsemantic ⊕ rerank",
-         "× penalties\n× behavioral", "Top-100\n+ reasoning", "submission\n.csv / .xlsx"]
+    # Row B - scored ranking (rank.py)
+    label(slide, 0.35, 3.18, 3.4, "2 · SCORED RANKING - rank.py (CPU · offline · <=5 min)", SCORED)
+    b = ["candidates\n.jsonl", "Honeypot\nfilter", "JD rubric + features\nsemantic + rerank",
+         "x penalties\nx behavioral", "Top-100\n+ reasoning", "submission\n.csv / .xlsx"]
     by, bh, bw, bgap, bx0 = 3.5, 0.74, 1.4, 0.18, 0.35
     bboxes = []
     for i, t in enumerate(b):
@@ -315,18 +317,18 @@ def draw_arch(slide):
     cx = ax0 + 4 * (aw + agap) + aw / 2
     tx = bx0 + 2 * (bw + bgap) + bw / 2
     arrow(slide, cx, ay + ah, tx, by, color=CACHE, dashed=True, width=1.25)
-    label(slide, 5.7, 2.86, 3.0, "cached scores → loaded by rank.py", CACHE, size=7.5)
+    label(slide, 5.7, 2.86, 3.0, "cached scores -> loaded by rank.py", CACHE, size=7.5)
 
     # demo + compliance strip
-    box(slide, 0.5, 4.62, 9.0, 0.62,
-        "Demo sandbox: app/ (FastAPI) + frontend/ (React + Tailwind) → single Docker image (HF Space), "
+    box(slide, 0.5, 4.46, 9.0, 0.56,
+        "Demo sandbox: app/ (FastAPI) + frontend/ (React + Tailwind) -> single Docker image (HF Space), "
         "reading the same src/.   Compliance: GPU / transformers live only in precompute; rank.py is "
         "stdlib · CPU · offline.", GREYF, fg=RGBColor(0x20, 0x25, 0x2B), size=8)
 
 
 def draw_results(slide):
     stats = [("0", "honeypots in top-100"), ("~190s", "CPU · offline run"),
-             ("83/100", "in the 5–9 yr band"), ("97/100", "show ranking work")]
+             ("83/100", "in the 5-9 yr band"), ("97/100", "show ranking work")]
     y, h, w, gap, x0 = 1.6, 1.18, 2.13, 0.21, 0.45
     for i, (num, lab) in enumerate(stats):
         stat_card(slide, x0 + i * (w + gap), y, w, h, num, lab)
@@ -352,7 +354,7 @@ def main():
     prs = Presentation(str(TEMPLATE))
     slides = list(prs.slides)
 
-    # slide 1 — title fields
+    # slide 1 - title fields
     for sh in slides[0].shapes:
         if not sh.has_text_frame:
             continue
@@ -391,7 +393,7 @@ def main():
             panel_body(slide, items)
         footer(slide, n)
 
-    # slide 7 — System Architecture (native diagram)
+    # slide 7 - System Architecture (native diagram)
     accent_rule(slides[6])
     draw_arch(slides[6])
     footer(slides[6], 7)
