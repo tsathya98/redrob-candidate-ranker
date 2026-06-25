@@ -20,6 +20,12 @@ reasoning about **contextual + behavioral fit, not keyword overlap**.
 > top-10 audit) · the approach deck **`submission/Redrob_Idea_Submission.pdf`** · the iteration trail
 > **`docs/PROJECT_LOG.md`** · reproduce with `just check` (rank + validate).
 
+![Redrob candidate-ranking demo dashboard](docs/images/ui_hero.png)
+
+*The demo sandbox (`just serve`): JD intelligence (must-have **gates** + down-weighted **negatives**),
+the ranked **leaderboard**, and a per-candidate **score breakdown** with cross-encoder-reranked relevance
+signals and fact-grounded "reading between the lines" reasoning.*
+
 ## Results & observations (for reviewers)
 
 - **`docs/09_results_and_observations.md`** — what we measured and decided: validator passes, **0 honeypots
@@ -74,6 +80,8 @@ just web          # React dev server at http://localhost:5173 (proxies /api)
 A Vite + React + Tailwind dashboard that visualizes the ranking, score breakdowns, "reading between the
 lines" evidence, and honeypot/trap detection. See `docs/08_demo_ui.md`. Deploy as a single Hugging Face
 Docker Space (`just docker-build` / `just docker-run` for the local container).
+
+![Full demo dashboard](docs/images/ui_tall.png)
 
 ## Approach (one paragraph)
 
