@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer,
 } from "recharts";
 import {
   Quote, AlertTriangle, ShieldAlert, Sparkles, Loader2, Building2, GraduationCap,
@@ -64,6 +64,7 @@ export function CandidateDrawer({ id }: { id: string | null }) {
             <RadarChart data={radar} outerRadius="72%">
               <PolarGrid stroke="#ffffff14" />
               <PolarAngleAxis dataKey="axis" tick={{ fill: "#8b90a8", fontSize: 10 }} />
+              <PolarRadiusAxis domain={[0, 1]} tick={false} axisLine={false} />
               <Radar dataKey="v" stroke="#7c5cff" fill="#7c5cff" fillOpacity={0.35}
                      isAnimationActive={false} />
             </RadarChart>

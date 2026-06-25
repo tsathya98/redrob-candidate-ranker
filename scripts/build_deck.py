@@ -391,6 +391,51 @@ def panel_body(slide, items, x=0.78, y=1.64, w=8.45, h=3.25):
     return tb
 
 
+def _maprow(slide, y, left, right, kind):
+    """One row of the JD->mechanism mapping: tone stripe + left (JD) -> right (our encoding)."""
+    tone = {"want": HEAD, "accept": GREEN, "reject": RGBColor(0xE1, 0x1D, 0x48)}[kind]
+    h = 0.46
+    card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5), Inches(y), Inches(9.0), Inches(h))
+    card.fill.solid(); card.fill.fore_color.rgb = PANEL
+    card.line.color.rgb = BORDER; card.line.width = Pt(0.75); card.shadow.inherit = False
+    stripe = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5), Inches(y + 0.08), Inches(0.07), Inches(h - 0.16))
+    stripe.fill.solid(); stripe.fill.fore_color.rgb = tone; stripe.line.fill.background(); stripe.shadow.inherit = False
+    lt = slide.shapes.add_textbox(Inches(0.72), Inches(y), Inches(3.95), Inches(h))
+    lt.text_frame.word_wrap = True; lt.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+    lt.text_frame.margin_top = lt.text_frame.margin_bottom = Inches(0.02)
+    rl = lt.text_frame.paragraphs[0].add_run(); rl.text = left; style(rl, 9.5, BODY)
+    ar = slide.shapes.add_textbox(Inches(4.68), Inches(y), Inches(0.42), Inches(h))
+    ar.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+    ap = ar.text_frame.paragraphs[0]; ap.alignment = PP_ALIGN.CENTER
+    ra = ap.add_run(); ra.text = "->"; style(ra, 11, MUTE, bold=True)
+    rt = slide.shapes.add_textbox(Inches(5.15), Inches(y), Inches(4.25), Inches(h))
+    rt.text_frame.word_wrap = True; rt.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+    rt.text_frame.margin_top = rt.text_frame.margin_bottom = Inches(0.02)
+    rr = rt.text_frame.paragraphs[0].add_run(); rr.text = right; style(rr, 9.5, BODY)
+
+
+def draw_jd_mapping(slide):
+    label(slide, 0.72, 1.58, 3.95, "WHAT THE JD WANTS / REJECTS", MUTE, size=9)
+    label(slide, 5.15, 1.58, 4.25, "HOW OUR ENGINE ENCODES IT", MUTE, size=9)
+    rows = [
+        ("Embeddings retrieval, vector/hybrid search, ranking eval (NDCG/MAP), strong Python",
+         "Concept lexicon over career descriptions + role-gated skill depth", "want"),
+        ("5-9 yrs, product company, shipped an end-to-end ranking / search / recsys",
+         "Experience band + product-vs-services signal + semantic match", "want"),
+        ("Tier-5 who built a recsys but never writes 'RAG' / 'Pinecone'",
+         "bge embeddings over career text catch the plain-language fit", "accept"),
+        ("'Marketing Manager' with a perfect AI skill list",
+         "Engineering-role gate; the skills list is excluded from relevance", "reject"),
+        ("Services-only career, CV/speech without NLP/IR, title-chaser",
+         "Soft penalties  x0.45 / x0.6 / x0.85", "reject"),
+        ("Stale login, 5% recruiter response (not actually available)",
+         "Bounded behavioral-availability multiplier (down-weight)", "reject"),
+    ]
+    y0, step = 1.92, 0.5
+    for i, (l, r, k) in enumerate(rows):
+        _maprow(slide, y0 + i * step, l, r, k)
+
+
 def main():
     prs = Presentation(str(TEMPLATE))
     slides = list(prs.slides)
@@ -418,6 +463,8 @@ def main():
 
         if n == 8:
             draw_results(slide)
+        elif n == 3:
+            draw_jd_mapping(slide)
         elif n == 5:
             content_panel(slide, x=0.45, y=1.52, w=5.35, h=3.42)
             panel_body(slide, items, x=0.78, y=1.64, w=4.75, h=3.25)

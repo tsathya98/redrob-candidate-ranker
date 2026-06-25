@@ -57,7 +57,7 @@ export function Leaderboard({
     <Card className="flex h-full flex-col p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
         <SectionTitle kicker="Ranked Output"
-          title={mode === "smart" ? `Top candidates (${rows.length})` : "What a keyword ranker would pick"}
+          title={mode === "smart" ? `Ranked candidates (${rows.length})` : "What a keyword ranker would pick"}
           icon={<TrendingUp className="h-5 w-5 text-cyan-300" />} />
         <Toggle mode={mode} set={setMode} />
       </div>
