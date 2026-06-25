@@ -4,8 +4,18 @@ Our submission for the **Hack2Skill × RedRob Data & AI Challenge (Track 01)**: 
 candidates from a 100,000-candidate pool for the *Senior AI Engineer (Founding Team)* job description —
 reasoning about contextual + behavioral fit, not keyword overlap.
 
-> **Status:** Phase 0 — project setup complete (docs, scaffold, git). Ranking pipeline is being built in
-> phases; see `docs/05_approach_and_roadmap.md`.
+> **Status:** Ranker built (Slice 2 — semantic embeddings + cross-encoder rerank). `rank.py` produces a
+> valid, **honeypot-free** top-100 in ~190s CPU/offline. See **`docs/09_results_and_observations.md`** for
+> results, the semantic-query ablation, the JD-negative calibration, and the manual top-10 audit (jury-facing).
+
+## Results & observations (for reviewers)
+
+- **`docs/09_results_and_observations.md`** — what we measured and decided: validator passes, **0 honeypots
+  in top-100**, ~190s CPU/offline run, the 3-way semantic-query ablation, the full-pool JD-negative
+  calibration, and the manual top-10 audit. Reproduce with `scripts/quality_proxy.py`,
+  `scripts/audit_candidates.py`, `scripts/calibrate_negatives.py`.
+- **`docs/jd_text.md`** — the verbatim JD; the semantic query is a distilled, provenance-linked extract
+  (`src/jd_profile.py::JD_QUERY_TEXT`).
 
 ## Data setup
 

@@ -206,3 +206,51 @@ GPU for the *offline* step only — the scored `rank.py` still loads plain JSON 
 (the nvidia-* wheels are multi-GB and flaky). Fixed a `meta.json` NameError leftover from the funnel refactor.
 
 **Next steps:** deploy the HF sandbox; then Slice 3 (tune component/blend weights on archetypes, validate top-50).
+
+---
+
+## 2026-06-25 — Slice 3a: JD-as-dataset audit, semantic-query ablation, negative calibration
+
+**Goal:** the user flagged that `job_description.docx` is far richer than a keyword list and asked (a) to
+read *every* file in `data/`, (b) whether the flow is correct, (c) whether to use the JD "as-is", and (d)
+whether an LLM layer would help. Also confirmed competition logistics.
+
+**Done / decided:**
+- **Read every `data/` file.** Schema↔code integrity verified (all fields our code touches exist in real
+  records). The `[PUB]…challenge.zip` is just a duplicate of the bundle (no new files). Captured the full
+  JD verbatim to **`docs/jd_text.md`** (provenance asset for the jury).
+- **Semantic query ablation (high-leverage — swings >50% of the top-100).** Compared three query
+  formulations end-to-end (full offline precompute + rank each), scored on a new automated quality proxy
+  (`scripts/quality_proxy.py`):
+  - A = distilled paraphrase (original): clean tail, softer top-10.
+  - B = verbatim JD, tool-enumerated: **worst** — surface tool-name matching polluted top-100
+    (ranking-work 98→53, juniors 3→20, in-band 81→64) for a tiny top-10 gain.
+  - C = gestalt distillation (**shipped**): best of both — top-100 in-band 83, juniors 1, ranking-work 97,
+    and top-10 senior-titles 8/10. Now `src/jd_profile.py::JD_QUERY_TEXT`, with the ablation noted inline.
+  - **Lesson:** "use the JD as-is" is right for *provenance* but wrong for the *embedding query* — long
+    keyword-enumerated text makes a small bi-encoder match tokens, not substance. Negatives stay in the
+    rubric, not the query.
+- **JD-negative calibration (full 100k scan, `scripts/calibrate_negatives.py`).** The JD's three hard
+  "disqualifiers" don't manifest as populations here: research-only = 0% academic employers / 0% PhD /
+  0.28% research title anywhere; stale architect/tech-lead = **0.00%**; langchain = 5.52% but **100%
+  keyword-stuffers** already crushed by the role gate (a content detector would false-positive ~20%, the
+  rejected-honeypot-check failure mode). Annotated `NEGATIVE_CONCEPTS` accordingly — implemented negatives
+  are services-only / CV-speech / title-chaser / location; the three above are intentionally not penalized.
+- **LLM-layer decision (compliant design).** Ranking step must stay CPU/offline/no-hosted-LLM/≤5min, so no
+  live LLM in `rank.py`. A *local* SLM is allowed **only offline in precompute** (GPU ok, no time limit),
+  baked to JSON that `rank.py` reads — exactly the pattern we already use for the bge cross-encoder. Verdict:
+  the offline LLM-judge is a *marginal, higher-variance* add (lit: ~5-8% NDCG offline) and only worth it if a
+  manual top-20 audit shows the cross-encoder making fixable mistakes. Not a dependency.
+- **Jury-facing results:** new **`docs/09_results_and_observations.md`** (TL;DR, validation-without-GT,
+  the ablation, the calibration, the top-10 audit, reproduce steps) + reproducible `scripts/`
+  (`quality_proxy.py`, `audit_candidates.py`, `calibrate_negatives.py`).
+
+**Results (final, query C):** `rank.py` 189.5s CPU/offline; validator passes; **0 honeypots** in top-100;
+top-10 are all senior product-company retrieval/ranking/NLP engineers, 5.9–7.9y, India-based, available.
+
+**Logistics confirmed:** submissions close **2 July 2026** (extended). **Max 3 submissions; only the LAST
+valid one is scored** (not best-of-3) — so the final submission must be the version with the strongest proxy
+evidence; don't make the last action a gamble. No leaderboard / no feedback during the window.
+
+**Next steps:** (1) top-20 manual audit + any weight fix; (2) deploy HF sandbox (required); (3) fill
+`submission_metadata.yaml` (team/repo/sandbox); (4) lock submission #1 once the release gate is green.
