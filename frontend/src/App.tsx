@@ -58,14 +58,14 @@ export default function App() {
       )}
 
       <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)_400px]">
-        <div className="h-[calc(100vh-240px)] min-h-[520px]"><JdIntelligence /></div>
-        <div className="h-[calc(100vh-240px)] min-h-[520px]">
+        <div className="h-[calc(100vh-240px)] min-h-[520px] max-h-[760px]"><JdIntelligence /></div>
+        <div className="h-[calc(100vh-240px)] min-h-[520px] max-h-[760px]">
           {ranking && (
             <Leaderboard rows={ranking.results} selectedId={selected} onSelect={setSelected} />
           )}
           {isLoading && <Card className="h-full animate-pulse" />}
         </div>
-        <div className="h-[calc(100vh-240px)] min-h-[520px]"><CandidateDrawer id={selected} /></div>
+        <div className="h-[calc(100vh-240px)] min-h-[520px] max-h-[760px]"><CandidateDrawer id={selected} /></div>
       </div>
 
       {/* honeypot guardrail strip */}
