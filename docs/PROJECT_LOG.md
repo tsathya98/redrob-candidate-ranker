@@ -125,3 +125,34 @@ in small increments; update `docs/` (and `CLAUDE.md`) when decisions change.
 
 **Next steps:** build the demo UI (Part B/C/D of the plan) — FastAPI backend wrapping the ranker, then the
 Vite/React core wow-set, deployed as the HF sandbox. Slice 2 (embeddings) and Slice 3 (tuning) follow.
+
+---
+
+## 2026-06-25 — Demo UI built (FastAPI + Vite/React core wow-set)
+
+**Goal:** A SOTA, jury-impressing demo that doubles as the mandatory sandbox. (User decisions: ranker-first,
+Vite+React, optional LLM layer, core wow-set now + maximal backlog.) See `docs/08_demo_ui.md`.
+
+**Done:**
+- **Backend** (`app/`): FastAPI wrapping `src/`. Endpoints `/api/rank` (ranked + honeypot flags + naive-vs-smart
+  comparison), `/api/jd` (capability rubric), `/api/candidate/{id}` (breakdown + reading-between-the-lines +
+  gap analysis), `/api/stats`, optional `/api/explain` (LLM, demo-only, key-gated, graceful fallback).
+  Curated 80-candidate demo sample committed (30 top + 15 stuffers + 10 honeypots + 25 random).
+- **Frontend** (`frontend/`): Vite + React 19 + TS + Tailwind 4 + TanStack Query + Recharts + Framer Motion.
+  Five core panels (JD Intelligence, ranked leaderboard w/ score rings, candidate drawer w/ radar +
+  reading-between-the-lines + gaps, guardrail strip, naive-vs-smart stats) + optional AI-narration button.
+- **Deploy** (`Dockerfile`, `.dockerignore`): multi-stage (build UI → FastAPI serves dist + API on $PORT) →
+  one HF Docker Space URL; `docker run` fallback. Deploy steps documented (run by user; Docker/HF CLI absent here).
+- Verified end-to-end via uvicorn: `/` serves the React app, `/api/rank` returns the real ranking
+  (top-3 = recsys/ML/search engineers), 10 honeypots flagged, **top-10 overlap with keyword ranker = 3/10**.
+
+**Decisions / notes:**
+- Bundle ~681 KB (recharts+framer) — fine for a demo; could code-split later.
+- LLM narration uses a fact-only prompt and never affects ranks; off by default (no key) so the "100% offline
+  ranking" story stays clean.
+
+**Backlog (maximal showcase — docs/08):** gap-analysis upgrade, naive↔smart toggle animation, pipeline viz,
+pool analytics, upload-your-own-sample, Slice-2 semantic sub-score surfacing.
+
+**Next steps:** user deploys the HF Space (fill `submission_metadata.sandbox_link`); then Slice 2 (precomputed
+embeddings) → Slice 3 (tuning), which flow through the UI automatically.

@@ -21,7 +21,7 @@ team_members:
 # Code and reproducibility
 # ============================================================================
 github_repo: "TODO-https://github.com/USER/REPO"
-sandbox_link: "TODO-hosted-sandbox-url"   # HF Spaces / Streamlit / Replit / Colab / Docker / Binder
+sandbox_link: "TODO-hosted-sandbox-url"   # HF Docker Space (Dockerfile ready) — deploy then fill; see docs/08
 reproduce_command: "python src/rank.py --candidates data/candidates.jsonl --out submission.csv"
 
 # ============================================================================

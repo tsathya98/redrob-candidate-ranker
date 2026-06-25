@@ -1,0 +1,11 @@
+data/
+old/
+**/node_modules
+frontend/dist
+**/__pycache__
+*.pyc
+.git
+.venv
+submission*.csv
+docs/
+*.md

@@ -80,10 +80,18 @@ src/                      ranking package (implement the phase-tagged TODOs):
   features.py             per-candidate feature extraction                           [Phase 3/5]
   scoring.py              component scores + behavioral modifier + final ranking     [Phase 3-7]
   reasoning.py            fact-grounded, varied, rank-consistent rationale strings   [Phase 6]
-  rank.py                 CLI entry: the single reproduce command (wired now)        [Phase 1-7]
-requirements.txt          deps (CPU-only, offline)
+  rank.py                 CLI entry: the single reproduce command (BUILT, Slice 1)    [Phase 1-7]
+app/                      FastAPI demo backend (wraps src/) + demo_data sample          [UI]
+  main.py, ranker_service.py, demo_data/demo_candidates.jsonl, requirements.txt
+frontend/                 Vite+React+TS demo UI (the sandbox) — see docs/08            [UI]
+Dockerfile, .dockerignore single-image deploy (HF Docker Space / docker run)
+requirements.txt          ranker deps (CPU-only, offline; ranker is stdlib-only)
 submission_metadata.yaml  portal metadata (fill TODOs before submission)
 ```
+
+> **Status note (keep current):** Slice 1 ranker is BUILT (`rank.py` produces a valid, honeypot-free
+> top-100 in ~156s). The demo UI (FastAPI `app/` + Vite `frontend/`) is BUILT and verified via uvicorn.
+> Next: deploy the HF sandbox, then Slice 2 (precomputed embeddings) → Slice 3 (tuning). See `docs/08` + log.
 
 ## 📦 Where the data lives (`data/` — NOT in git; ~465 MB, git-ignored)
 
@@ -119,6 +127,10 @@ python src/rank.py --candidates data/candidates.jsonl --out submission.csv
 
 # Inspect the pool quickly (streaming; the file is large)
 wc -l data/candidates.jsonl
+
+# Demo UI (the sandbox): backend + frontend (see docs/08)
+pip install -r app/requirements.txt && uvicorn app.main:app --port 8000
+cd frontend && npm install && npm run dev          # http://localhost:5173 (proxies /api)
 ```
 
 ## ✅ Pre-submission release gate (see docs/04 for the full checklist)
