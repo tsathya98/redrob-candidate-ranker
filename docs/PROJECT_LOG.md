@@ -93,3 +93,35 @@ the repo map, data location, commands, and the working conventions (log every st
 in small increments; update `docs/` (and `CLAUDE.md`) when decisions change.
 
 **Next steps:** begin Phase 1 — implement `data_loader.iter_candidates` + `candidate_text_blob`.
+
+---
+
+## 2026-06-25 — Slice 1 complete: baseline ranker produces a valid CSV
+
+**Goal:** End-to-end baseline ranker (rules + lexical, no embeddings) → first valid, honeypot-free submission.
+
+**Done:**
+- `jd_profile.py` — JD encoded as role-relevance map, relevant-skill set, weighted concept lexicon
+  (matchers precompiled), component weights, and a `jd_query_text()` for Slice 2.
+- `features.py` — extractors: title/career plausibility, product-vs-services, concept evidence in
+  *substance text* (career descriptions, NOT skills list — stuffer defense), experience-band fit,
+  relevant-skill depth (proficiency×endorsement×duration, assessment-corroborated), education, location, tenure.
+- `scoring.py` — weighted components + skill-depth gated by role + soft penalties (services-only,
+  CV/speech-only, title-chaser, location) × bounded behavioral modifier (0.5–1.15). Returns full breakdown.
+- `reasoning.py` — fact-grounded, rank-banded, varied templated rationales with honest concerns.
+- `rank.py` — streaming pipeline + top-K heap; honeypots filtered from contention.
+
+**Results (full 100k run):**
+- Runtime **156s** (< 5-min budget); **65 honeypots filtered**; `validate_submission.py` **passes**.
+- **Top-10 are all genuine AI/ML/Search/Recsys engineers** at product companies (Amazon, Zomato, CRED,
+  Razorpay, Paytm, Microsoft, Sarvam), 6–8 yrs, India — zero stuffers/honeypots/non-eng titles.
+- Massive improvement over the naive `sample_submission` (which ranked HR Managers #1).
+
+**Notes / Slice-3 backlog:**
+- Concept-regex over 100k texts is the runtime cost (~156s). Optimize (combined patterns) for margin.
+- Top candidates with no concerns share an identical closer ("Strong on both relevance and availability") —
+  add more variation for the Stage-4 variation check.
+- Genpact not in SERVICES_FIRMS; revisit services list.
+
+**Next steps:** build the demo UI (Part B/C/D of the plan) — FastAPI backend wrapping the ranker, then the
+Vite/React core wow-set, deployed as the HF sandbox. Slice 2 (embeddings) and Slice 3 (tuning) follow.
