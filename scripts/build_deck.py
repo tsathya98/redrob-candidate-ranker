@@ -56,6 +56,7 @@ MUTE = RGBColor(0x6B, 0x72, 0x80)
 PANEL = RGBColor(0xF6, 0xF7, 0xFB)  # light content-card fill
 BORDER = RGBColor(0xE2, 0xE6, 0xF0)  # card border
 CARD = RGBColor(0xFF, 0xFF, 0xFF)   # stat-card fill
+GREEN = RGBColor(0x16, 0xA3, 0x4A)  # "live" accent
 
 # Per-slide content. Each item: ("h"|"b"|"s"|"note", text)
 #   h = bold sub-header, b = bullet, s = sub-bullet (indented), note = muted italic
@@ -248,11 +249,10 @@ def console_box(slide, x, y, w, h, lines):
     return bx
 
 
-def image_panel(slide, path, x, y, w, h, caption=None):
+def image_panel(slide, path, x, y, w, h, caption=None, cap_color=HEAD):
     """Place an image fit to (w,h) box, top-aligned and centered, with a caption + border."""
     from PIL import Image as _I
     iw, ih = _I.open(path).size
-    scale = min(w / (iw / 96.0), h / (ih / 96.0))  # not exact dpi; use aspect fit below
     ar = iw / ih
     draw_w = h * ar
     if draw_w > w:
@@ -263,7 +263,7 @@ def image_panel(slide, path, x, y, w, h, caption=None):
     if caption:
         cap = slide.shapes.add_textbox(Inches(x), Inches(y - 0.32), Inches(w), Inches(0.3))
         rc = cap.text_frame.paragraphs[0]; rc.alignment = PP_ALIGN.CENTER
-        rr = rc.add_run(); rr.text = caption; style(rr, 10, HEAD, bold=True)
+        rr = rc.add_run(); rr.text = caption; style(rr, 10, cap_color, bold=True)
     pic = slide.shapes.add_picture(path, Inches(cx), Inches(y), height=Inches(draw_h))
     pic.line.color.rgb = BORDER; pic.line.width = Pt(0.75)
     return pic
@@ -424,7 +424,7 @@ def main():
                             caption="Explainability in the demo UI")
             else:  # n == 10
                 image_panel(slide, "docs/images/ui_leaderboard.png", 6.0, 1.84, 3.5, 2.92,
-                            caption="Ranked output (live demo)")
+                            caption="LIVE on Hugging Face Space", cap_color=GREEN)
                 url = slide.shapes.add_textbox(Inches(6.0), Inches(4.84), Inches(3.5), Inches(0.3))
                 up = url.text_frame.paragraphs[0]; up.alignment = PP_ALIGN.CENTER
                 ur = up.add_run()
