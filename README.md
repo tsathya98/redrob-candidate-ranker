@@ -78,10 +78,33 @@ just web          # React dev server at http://localhost:5173 (proxies /api)
 ```
 
 A Vite + React + Tailwind dashboard that visualizes the ranking, score breakdowns, "reading between the
-lines" evidence, and honeypot/trap detection. See `docs/08_demo_ui.md`. Deploy as a single Hugging Face
-Docker Space (`just docker-build` / `just docker-run` for the local container).
+lines" evidence, and honeypot/trap detection. See `docs/08_demo_ui.md`.
 
 ![Full demo dashboard](docs/images/ui_tall.png)
+
+### Run the sandbox in Docker (self-contained — no hosting required)
+
+A single image builds the React UI and serves it with the FastAPI ranker on a small bundled sample.
+This is our **sandbox recipe** (per submission spec §10.5 — builds and runs unmodified):
+
+```bash
+docker build -t redrob-ranker .          # or: just docker-build
+docker run --rm -p 7860:7860 redrob-ranker   # or: just docker-run
+# open http://localhost:7860
+```
+
+The same image is deployable as a **Hugging Face Docker Space** (it listens on `$PORT`, default 7860).
+The ranking inside stays CPU-only and offline; the demo ships with precomputed artifacts so it needs no GPU.
+
+## Engineering & reproducibility
+
+- **`uv`** for fast, fully-pinned, reproducible Python environments (no `pip`); **`just`** as a
+  cross-platform task runner (Windows / Linux / macOS) so every step is one documented command.
+- The **scored ranker is stdlib-only** — no third-party imports in the path Stage-3 reproduces — which
+  removes dependency drift as a failure mode.
+- **Docker parity**: the same image runs the demo locally, as the sandbox, and as the HF Space.
+- **Auditable iteration**: small, logical commits + `docs/PROJECT_LOG.md` (the challenge grades real git
+  history at Stage 4).
 
 ## Approach (one paragraph)
 
