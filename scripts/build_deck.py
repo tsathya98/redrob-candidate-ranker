@@ -20,13 +20,32 @@ from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 
 
-def no_bullet(p):
-    """Suppress any inherited list bullet on a paragraph (we control markers via text)."""
+def _pPr(p, marL=None, indent=None):
     pPr = p._p.get_or_add_pPr()
-    for tag in ("a:buChar", "a:buAutoNum", "a:buNone"):
-        for e in pPr.findall(qn(tag)):
+    if marL is not None:
+        pPr.set("marL", str(Inches(marL)))
+    if indent is not None:
+        pPr.set("indent", str(Inches(indent)))
+    for t in ("a:buClr", "a:buFont", "a:buChar", "a:buAutoNum", "a:buNone"):
+        for e in pPr.findall(qn(t)):
             pPr.remove(e)
+    return pPr
+
+
+def no_bullet(p, marL=0.0):
+    """Flush-left paragraph, no bullet (headers / notes)."""
+    pPr = _pPr(p, marL=marL, indent=0.0)
     pPr.append(pPr.makeelement(qn("a:buNone"), {}))
+
+
+def bullet(p, char, marL, indent, color="0B6B66"):
+    """Clean hanging bullet: marker at the indent, text wraps aligned at marL."""
+    pPr = _pPr(p, marL=marL, indent=indent)
+    buClr = pPr.makeelement(qn("a:buClr"), {})
+    buClr.append(buClr.makeelement(qn("a:srgbClr"), {"val": color}))
+    pPr.append(buClr)
+    pPr.append(pPr.makeelement(qn("a:buFont"), {"typeface": "Arial"}))
+    pPr.append(pPr.makeelement(qn("a:buChar"), {"char": char}))
 
 TEMPLATE = Path("submission/Idea Submission Template _ Redrob.pptx")
 OUT = Path("submission/Redrob_Idea_Submission.pptx")
@@ -129,11 +148,7 @@ CONTENT = {
         ("b", "Docs: README + docs/00-09 + docs/PROJECT_LOG.md (the iteration trail)."),
         ("s", "Run the demo locally: just serve (FastAPI + React) or just docker-run."),
     ],
-    11: [
-        ("h", "We'd rather surface 10 great matches than 1000 maybes."),
-        ("note", "- the JD's words, and our design goal."),
-        ("b", "Thank you.   Team Argmax  ·  Sathya T"),
-    ],
+    # 11 (closing) — left as the template's clean "THANK YOU" branded slide (don't overwrite).
 }
 
 TITLE_FIELDS = {  # slide 1: prefix -> filled value
@@ -159,19 +174,30 @@ def fill_body(tf, items):
     for kind, text in items:
         p = tf.paragraphs[0] if first else tf.add_paragraph()
         first = False
-        no_bullet(p)
+        p.line_spacing = 1.04
         if kind == "h":
-            p.space_before = Pt(6); p.space_after = Pt(2)
-            r = p.add_run(); r.text = text; style(r, 13, HEAD, bold=True)
+            no_bullet(p, marL=0.0)
+            p.space_before = Pt(11); p.space_after = Pt(5)
+            r = p.add_run(); r.text = text; style(r, 14.5, HEAD, bold=True)
         elif kind == "note":
-            p.space_after = Pt(2)
+            no_bullet(p, marL=0.0)
+            p.space_before = Pt(5); p.space_after = Pt(2)
             r = p.add_run(); r.text = text; style(r, 10.5, MUTE, italic=True)
         elif kind == "s":
-            p.level = 1; p.space_after = Pt(1)
-            r = p.add_run(); r.text = "- " + text; style(r, 10.5, BODY)
+            bullet(p, "–", 0.55, -0.27, color="6B7280")
+            p.space_after = Pt(3)
+            r = p.add_run(); r.text = text; style(r, 11, BODY)
         else:  # bullet
-            p.space_after = Pt(2)
-            r = p.add_run(); r.text = "•  " + text; style(r, 11, BODY)
+            bullet(p, "•", 0.28, -0.28)
+            p.space_after = Pt(6)
+            r = p.add_run(); r.text = text; style(r, 12, BODY)
+
+
+def accent_rule(slide, x=0.5, y=1.33, w=1.4, h=0.055):
+    """A short teal rule under the slide title for visual hierarchy."""
+    sh = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    sh.fill.solid(); sh.fill.fore_color.rgb = RGBColor(0x0B, 0x6B, 0x66)
+    sh.line.fill.background(); sh.shadow.inherit = False
 
 
 def body_shape(slide):
@@ -285,12 +311,28 @@ def main():
     # content slides
     for n, items in CONTENT.items():
         slide = slides[n - 1]
+        accent_rule(slide)
         bs = body_shape(slide)
-        if bs is None:  # e.g. slide 7 / 11 have no body box -> add one
+        if bs is None:  # slide had no body box -> add one
             bs = slide.shapes.add_textbox(Inches(0.5), Inches(1.4), Inches(9.0), Inches(3.6))
         fill_body(bs.text_frame, items)
 
+    # slide 10 — add a live-demo screenshot beside the asset list
+    shot = Path("docs/images/ui_hero.png")
+    if shot.exists():
+        s10 = slides[9]
+        bs = body_shape(s10)
+        if bs is not None:
+            bs.width = Inches(5.15)
+        cap = s10.shapes.add_textbox(Inches(5.5), Inches(1.66), Inches(4.1), Inches(0.3))
+        rc = cap.text_frame.paragraphs[0].add_run()
+        rc.text = "Live demo dashboard  (just serve)"
+        style(rc, 10, HEAD, bold=True)
+        pic = s10.shapes.add_picture(str(shot), Inches(5.5), Inches(2.0), width=Inches(4.05))
+        pic.line.color.rgb = RGBColor(0xCB, 0xD5, 0xE1); pic.line.width = Pt(0.75)
+
     # slide 7 — System Architecture: native diagram
+    accent_rule(slides[6])
     draw_arch(slides[6])
 
     prs.save(str(OUT))
