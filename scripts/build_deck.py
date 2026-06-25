@@ -74,7 +74,7 @@ CONTENT = {
         ("b", "Availability-aware: a bounded behavioral multiplier down-weights unreachable "
               "'perfect-on-paper' candidates."),
         ("b", "Compliant by design: heavy models run offline; the scored step is stdlib, CPU-only, "
-              "offline, ~190s."),
+              "offline, ~150s."),
     ],
     3: [
         ("h", "Key requirements extracted from the JD"),
@@ -132,7 +132,7 @@ CONTENT = {
               "1 junior, 92 available. Top-10 are senior product-company retrieval/ranking/NLP engineers "
               "(Meta, Apple, Netflix, Zomato, Paytm, Razorpay...), 5.9-7.9 yrs."),
         ("h", "Meeting the runtime / compute constraints"),
-        ("b", "rank.py: ~190s, CPU-only, offline, <16 GB (the only GPU step is offline precompute)."),
+        ("b", "rank.py: ~150s, CPU-only, offline, <16 GB (the only GPU step is offline precompute)."),
         ("note", "Method validated by a 3-way query ablation + full-100k negative calibration (docs/09)."),
     ],
     9: [
@@ -366,14 +366,14 @@ def draw_arch(slide):
 
 
 def draw_results(slide):
-    stats = [("0", "honeypots in top-100"), ("~190s", "CPU · offline run"),
+    stats = [("0", "honeypots in top-100"), ("~150s", "CPU · offline run"),
              ("83/100", "in the 5-9 yr band"), ("97/100", "show ranking work")]
     y, h, w, gap, x0 = 1.6, 1.18, 2.13, 0.21, 0.45
     for i, (num, lab) in enumerate(stats):
         stat_card(slide, x0 + i * (w + gap), y, w, h, num, lab)
     console_box(slide, 0.45, 3.04, 9.1, 1.5, [
         ("cmd", "$ just check        # rank.py -> submission.csv, then validate"),
-        ("out", "Scored 100,000 candidates (65 honeypots filtered) in 186.8s; top score 1.03, cutoff 0.77"),
+        ("out", "Scored 100,000 candidates (65 honeypots filtered) in 146.2s; top score 1.00, cutoff 0.75"),
         ("out", "Wrote 100 ranked candidates to submission.csv     Submission is valid."),
         ("cmd", "$ uv run python scripts/quality_proxy.py submission.csv"),
         ("out", "top-100:  in-band 83/100   ranking-work 97/100   juniors 1/100   available 92/100"),
