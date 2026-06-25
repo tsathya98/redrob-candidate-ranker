@@ -40,3 +40,5 @@ __MACOSX/
 
 # Orientation files
 orientation.md
+# --- submission deck (organizer template / filled deck): keep local, upload to portal) ---
+submission/*.pptx
