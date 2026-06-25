@@ -79,3 +79,17 @@ cite its *design*, not its results.
 
 **Next steps:** unchanged — Phase 1 (data loader) then Phase 2 (honeypot filter). Embedder benchmarking lands
 in Phase 4; fusion (RRF vs weighted) settled on archetypes in Phase 4/8.
+
+---
+
+## 2026-06-25 — Added CLAUDE.md (session bootstrap)
+
+**Done:** Wrote `CLAUDE.md` at repo root — the agent operating guide so any fresh session recovers full context
+by reading `docs/` (00–07) for understanding and this `PROJECT_LOG.md` for state. It encodes the
+non-negotiable rules (CPU/offline/5-min, 0 honeypots in top-100, top-10 obsession, no-hallucination reasoning),
+the repo map, data location, commands, and the working conventions (log every step, commit incrementally).
+
+**Convention reminder for future sessions:** after each meaningful step, append a PROJECT_LOG entry and commit
+in small increments; update `docs/` (and `CLAUDE.md`) when decisions change.
+
+**Next steps:** begin Phase 1 — implement `data_loader.iter_candidates` + `candidate_text_blob`.
