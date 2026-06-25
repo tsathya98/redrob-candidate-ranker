@@ -16,6 +16,8 @@ from pptx import Presentation
 from pptx.util import Emu, Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.oxml.ns import qn
+from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 
 
 def no_bullet(p):
@@ -97,16 +99,7 @@ CONTENT = {
         ("b", "Validate: data/validate_submission.py confirms format before upload."),
         ("note", "Full workflow diagram: docs/05_approach_and_roadmap.md"),
     ],
-    7: [
-        ("h", "Components"),
-        ("b", "src/ ranker: data_loader (streaming) - jd_profile (gated rubric + distilled query) - "
-              "honeypot - features - scoring (semantic + lexical + rerank + behavioral) - reasoning - rank.py (CLI)."),
-        ("b", "scripts/precompute.py - offline, GPU: embeddings + cross-encoder -> JSON artifacts."),
-        ("b", "Demo: app/ (FastAPI) + frontend/ (Vite + React + Tailwind) -> single Docker image (HF Space)."),
-        ("h", "Compliance boundary"),
-        ("b", "GPU / transformers only in precompute; rank.py is stdlib, CPU-only, offline."),
-        ("note", "Paste the architecture diagram here -> docs/05_approach_and_roadmap.md"),
-    ],
+    # 7 (System Architecture) is drawn as a native diagram — see draw_arch().
     8: [
         ("h", "Results demonstrating ranking quality"),
         ("b", "Validator passes (100 rows, ranks 1-100, scores non-increasing, tie-break by id)."),
@@ -187,6 +180,90 @@ def body_shape(slide):
     return max(cand, key=lambda s: Emu(s.width).inches * Emu(s.height).inches, default=None)
 
 
+# ---- architecture diagram (native pptx shapes; renders crisply in the PDF) -------------------------
+OFFLINE = RGBColor(0x0B, 0x6B, 0x66)   # teal
+SCORED = RGBColor(0x1F, 0x4E, 0x79)    # blue
+CACHE = RGBColor(0x92, 0x40, 0x0E)     # amber
+GREYF = RGBColor(0xE9, 0xEC, 0xEF)     # light grey fill
+ARROW = RGBColor(0x6B, 0x72, 0x80)
+WHITE = RGBColor(0xFF, 0xFF, 0xFF)
+
+
+def box(slide, x, y, w, h, text, fill, fg=WHITE, size=8):
+    sh = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    sh.fill.solid(); sh.fill.fore_color.rgb = fill
+    sh.line.color.rgb = fill; sh.line.width = Pt(0.75)
+    sh.shadow.inherit = False
+    tf = sh.text_frame; tf.word_wrap = True
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    tf.margin_left = tf.margin_right = Inches(0.04)
+    tf.margin_top = tf.margin_bottom = Inches(0.02)
+    for i, line in enumerate(text.split("\n")):
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.alignment = PP_ALIGN.CENTER
+        r = p.add_run(); r.text = line
+        r.font.size = Pt(size); r.font.color.rgb = fg; r.font.bold = (i == 0)
+    return sh
+
+
+def arrow(slide, x1, y1, x2, y2, color=ARROW, dashed=False, width=1.5):
+    c = slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, Inches(x1), Inches(y1), Inches(x2), Inches(y2))
+    c.line.color.rgb = color; c.line.width = Pt(width)
+    ln = c.line._get_or_add_ln()
+    if dashed:
+        ln.append(ln.makeelement(qn("a:prstDash"), {"val": "dash"}))
+    ln.append(ln.makeelement(qn("a:tailEnd"), {"type": "triangle", "w": "med", "len": "med"}))
+    return c
+
+
+def label(slide, x, y, w, text, color, size=9):
+    tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(0.3))
+    tf = tb.text_frame; tf.word_wrap = True
+    r = tf.paragraphs[0].add_run(); r.text = text
+    r.font.size = Pt(size); r.font.bold = True; r.font.color.rgb = color
+    return tb
+
+
+def draw_arch(slide):
+    # Row A — offline precompute
+    label(slide, 0.5, 1.58, 6.0, "1 · OFFLINE PRECOMPUTE  (GPU, one-time)", OFFLINE)
+    a = ["100k\nprofiles", "Recall funnel\n(structured score)", "Bi-encoder\nbge-small\n(embeddings)",
+         "Cross-encoder\nbge-reranker-v2-m3", "artifacts\n*.json\n(cache)"]
+    ay, ah, aw, agap, ax0 = 1.92, 0.74, 1.55, 0.32, 0.5
+    aboxes = []
+    for i, t in enumerate(a):
+        x = ax0 + i * (aw + agap)
+        aboxes.append(box(slide, x, ay, aw, ah, t, CACHE if i == len(a) - 1 else OFFLINE))
+        if i:
+            px = ax0 + (i - 1) * (aw + agap) + aw
+            arrow(slide, px, ay + ah / 2, x, ay + ah / 2)
+
+    # Row B — scored ranking (rank.py)
+    label(slide, 0.35, 3.18, 3.4, "2 · SCORED RANKING — rank.py (CPU · offline · ≤5 min)", SCORED)
+    b = ["candidates\n.jsonl", "Honeypot\nfilter", "JD rubric + features\nsemantic ⊕ rerank",
+         "× penalties\n× behavioral", "Top-100\n+ reasoning", "submission\n.csv / .xlsx"]
+    by, bh, bw, bgap, bx0 = 3.5, 0.74, 1.4, 0.18, 0.35
+    bboxes = []
+    for i, t in enumerate(b):
+        x = bx0 + i * (bw + bgap)
+        bboxes.append(box(slide, x, by, bw, bh, t, SCORED))
+        if i:
+            px = bx0 + (i - 1) * (bw + bgap) + bw
+            arrow(slide, px, by + bh / 2, x, by + bh / 2)
+
+    # cache -> scoring (dashed): from artifacts box bottom to the rubric box top
+    cx = ax0 + 4 * (aw + agap) + aw / 2
+    tx = bx0 + 2 * (bw + bgap) + bw / 2
+    arrow(slide, cx, ay + ah, tx, by, color=CACHE, dashed=True, width=1.25)
+    label(slide, 5.7, 2.86, 3.0, "cached scores → loaded by rank.py", CACHE, size=7.5)
+
+    # demo + compliance strip
+    box(slide, 0.5, 4.62, 9.0, 0.62,
+        "Demo sandbox: app/ (FastAPI) + frontend/ (React + Tailwind) → single Docker image (HF Space), "
+        "reading the same src/.   Compliance: GPU / transformers live only in precompute; rank.py is "
+        "stdlib · CPU · offline.", GREYF, fg=RGBColor(0x20, 0x25, 0x2B), size=8)
+
+
 def main():
     prs = Presentation(str(TEMPLATE))
     slides = list(prs.slides)
@@ -212,6 +289,9 @@ def main():
         if bs is None:  # e.g. slide 7 / 11 have no body box -> add one
             bs = slide.shapes.add_textbox(Inches(0.5), Inches(1.4), Inches(9.0), Inches(3.6))
         fill_body(bs.text_frame, items)
+
+    # slide 7 — System Architecture: native diagram
+    draw_arch(slides[6])
 
     prs.save(str(OUT))
     print(f"wrote {OUT}")
