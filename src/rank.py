@@ -108,13 +108,17 @@ def run(args: argparse.Namespace) -> list[dict]:
     top = scoring.rank_pool(scored_list, top_n=args.top_n)
 
     cand_by_id = {payloads[c][1]["candidate_id"]: payloads[c][1] for (_, _, c) in heap}
+    # Normalize displayed scores to [0,1] (rank-1 -> 1.0). The bounded behavioral multiplier can push
+    # raw fit slightly above 1.0; rescaling by a positive constant preserves the ranking, ties and the
+    # non-increasing property while matching the spec's 0-1 score convention.
+    norm = top[0]["score"] if (top and top[0]["score"] > 0) else 1.0
     rows = []
     for s in top:
         cand = cand_by_id[s["candidate_id"]]
         rows.append({
             "candidate_id": s["candidate_id"],
             "rank": s["rank"],
-            "score": s["score"],
+            "score": min(1.0, s["score"] / norm),
             "reasoning": reasoning.build_reasoning(cand, s, s["rank"]),
         })
 
