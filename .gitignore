@@ -4,6 +4,8 @@ data/
 *.jsonl
 *.jsonl.gz
 *.zip
+# ...but the small curated demo sample for the sandbox IS committed:
+!app/demo_data/demo_candidates.jsonl
 
 # --- Separate prior project (not part of this repo) ---
 old/
