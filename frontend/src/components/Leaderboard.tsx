@@ -55,12 +55,18 @@ export function Leaderboard({
 
   return (
     <Card className="flex h-full flex-col p-5">
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-1.5 flex items-center justify-between gap-2">
         <SectionTitle kicker="Ranked Output"
           title={mode === "smart" ? `Ranked candidates (${rows.length})` : "What a keyword ranker would pick"}
           icon={<TrendingUp className="h-5 w-5 text-cyan-300" />} />
         <Toggle mode={mode} set={setMode} />
       </div>
+
+      {mode === "smart" && (
+        <div className="mb-2 text-[11px] text-[#6f7596]">
+          Demo sample · 80 profiles (10 honeypots filtered) · the full system ranks the top-100 of 100,000.
+        </div>
+      )}
 
       {mode === "keyword" && (
         <div className="mb-2 flex items-center gap-1.5 rounded-lg bg-amber-400/[0.07] px-2.5 py-1.5 text-[11px] text-amber-200/90">
