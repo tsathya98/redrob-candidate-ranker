@@ -85,10 +85,13 @@ requirements.txt          deps (CPU-only, offline)
 submission_metadata.yaml  portal metadata (fill TODOs before submission)
 ```
 
-## 📦 Where the data lives (NOT in git — it's ~465 MB, git-ignored)
+## 📦 Where the data lives (`data/` — NOT in git; ~465 MB, git-ignored)
+
+The challenge bundle is provided separately; place it in **`data/`** (the whole directory is git-ignored).
+A fresh clone has no `data/` — drop the bundle there before running anything.
 
 ```
-[PUB] India_runs_data_and_ai_challenge/[PUB] India_runs_data_and_ai_challenge/India_runs_data_and_ai_challenge/
+data/
   candidates.jsonl              100,000 candidates (the pool to rank)
   sample_candidates.json        first 50, pretty-printed (quick schema inspection)
   candidate_schema.json         JSON Schema for a candidate record
@@ -99,7 +102,8 @@ submission_metadata.yaml  portal metadata (fill TODOs before submission)
   redrob_signals_doc.docx        the 23 signals (already captured in docs/02)
   submission_metadata_template.yaml
 ```
-`old/` holds a separate prior project; only `visualCalibrationReport.html` is relevant (see docs/07).
+`old/` holds a separate prior project (also git-ignored); only `visualCalibrationReport.html` was relevant
+(distilled into docs/07).
 
 ## 🛠️ Commands you'll use
 
@@ -108,14 +112,13 @@ submission_metadata.yaml  portal metadata (fill TODOs before submission)
 python src/rank.py --help
 
 # Validate a submission (run before every upload)
-DATA='[PUB] India_runs_data_and_ai_challenge/[PUB] India_runs_data_and_ai_challenge/India_runs_data_and_ai_challenge'
-python "$DATA/validate_submission.py" submission.csv
+python data/validate_submission.py submission.csv
 
 # The single reproduce command (the ranking pipeline is built across phases 1-7)
-python src/rank.py --candidates "$DATA/candidates.jsonl" --out submission.csv
+python src/rank.py --candidates data/candidates.jsonl --out submission.csv
 
 # Inspect the pool quickly (streaming; the file is large)
-wc -l "$DATA/candidates.jsonl"
+wc -l data/candidates.jsonl
 ```
 
 ## ✅ Pre-submission release gate (see docs/04 for the full checklist)

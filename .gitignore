@@ -1,12 +1,11 @@
-# --- Challenge data bundle (large; do NOT commit) ---
-candidates.jsonl
-candidates.jsonl.gz
+# --- Challenge dataset (large; provided separately — never commit) ---
+# The full bundle lives in data/ (candidates.jsonl ~465 MB, validator, schema, samples, JD).
+data/
 *.jsonl
 *.jsonl.gz
-# NOTE: brackets are glob character-classes in gitignore — escape them.
-\[PUB\] India_runs_data_and_ai_challenge/
-\[PUB\] India_runs_data_and_ai_challenge.zip
 *.zip
+
+# --- Separate prior project (not part of this repo) ---
 old/
 
 # --- Precomputed / intermediate artifacts (regenerate via scripts) ---
@@ -19,7 +18,6 @@ embeddings/
 
 # --- Generated submissions (keep the code, not the output) ---
 submission*.csv
-!sample_submission.csv
 
 # --- Python ---
 __pycache__/

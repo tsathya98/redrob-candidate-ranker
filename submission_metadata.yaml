@@ -22,7 +22,7 @@ team_members:
 # ============================================================================
 github_repo: "TODO-https://github.com/USER/REPO"
 sandbox_link: "TODO-hosted-sandbox-url"   # HF Spaces / Streamlit / Replit / Colab / Docker / Binder
-reproduce_command: "python src/rank.py --candidates ./candidates.jsonl --out ./submission.csv"
+reproduce_command: "python src/rank.py --candidates data/candidates.jsonl --out submission.csv"
 
 # ============================================================================
 # Compute environment

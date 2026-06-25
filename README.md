@@ -7,11 +7,24 @@ reasoning about contextual + behavioral fit, not keyword overlap.
 > **Status:** Phase 0 — project setup complete (docs, scaffold, git). Ranking pipeline is being built in
 > phases; see `docs/05_approach_and_roadmap.md`.
 
+## Data setup
+
+The challenge bundle is **not** included in this repo (large + provided separately). Place it in `data/`:
+
+```
+data/
+  candidates.jsonl          # the 100k pool
+  validate_submission.py    # format validator
+  candidate_schema.json, sample_candidates.json, sample_submission.csv, *.docx, ...
+```
+
+`data/` and `old/` are git-ignored.
+
 ## Reproduce the submission (target interface)
 
 ```bash
-python src/rank.py --candidates ./candidates.jsonl --out ./submission.csv
-python "[PUB] India_runs_data_and_ai_challenge/.../validate_submission.py" submission.csv
+python src/rank.py --candidates data/candidates.jsonl --out submission.csv
+python data/validate_submission.py submission.csv
 ```
 
 The ranking step runs **CPU-only, offline, ≤5 min, ≤16 GB** (embeddings precomputed offline). See
