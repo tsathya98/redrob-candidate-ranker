@@ -123,6 +123,10 @@ def rank_candidates(candidates: list[dict]) -> dict:
 
     ranked = scoring.rank_pool([s for _, s in scored_rows], top_n=len(scored_rows))
     cand_by_id = {c["candidate_id"]: c for c, _ in scored_rows}
+    # Normalize displayed scores to 0-1 (top candidate = 1.0 -> 100 in the UI). The bounded behavioral
+    # multiplier can push raw fit slightly above 1.0; rescaling keeps the ranking + relative gaps but
+    # never shows a >100 score. (Display-only; the scored submission.csv keeps raw scores.)
+    top_score = max((s["score"] for s in ranked), default=1.0) or 1.0
 
     results = []
     for s in ranked:
@@ -131,7 +135,7 @@ def rank_candidates(candidates: list[dict]) -> dict:
             **_brief(c),
             "status": "ranked",
             "rank": s["rank"],
-            "score": s["score"],
+            "score": min(1.0, s["score"] / top_score),
             "components": s["components"],
             "modifier": s["modifier"],
             "penalty_multiplier": s["penalty_multiplier"],
@@ -203,7 +207,7 @@ def candidate_detail(c: dict) -> dict:
         "redrob_signals": c.get("redrob_signals", {}),
         "is_honeypot": is_hp,
         "honeypot_flags": honeypot.impossibility_flags(c) if is_hp else [],
-        "score": s["score"] if not is_hp else 0.0,
+        "score": min(1.0, s["score"]) if not is_hp else 0.0,
         "components": s["components"],
         "relevance_parts": s["evidence"].get("relevance_parts", {}),
         "reranked": s.get("reranked", False),

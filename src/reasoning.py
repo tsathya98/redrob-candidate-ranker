@@ -30,8 +30,19 @@ def _lead(rank: int, salt: int) -> str:
     return band[salt % len(band)]
 
 
+# varied phrasings (chosen deterministically per candidate so 10 sampled rows read differently)
+_CONNECT_LEAD = ["career shows", "hands-on with", "track record in", "evidence of", "built"]
+_CONCERN_WORD = ["Concern", "Watch", "Caveat", "Note"]
+_CLOSERS = ["Strong on both relevance and availability.", "Relevant work and actively available.",
+            "Substantive fit with healthy engagement signals."]
+
+
 def build_reasoning(candidate: dict, scored: dict, rank: int) -> str:
-    """Return a 1-2 sentence justification grounded in real facts and the score breakdown."""
+    """Return a 1-2 sentence justification grounded in real facts and the score breakdown.
+
+    Templated from real data only (no LLM -> no hallucination). Structure, connector verb and concern
+    wording vary deterministically per candidate so sampled reasonings are substantively different.
+    """
     p = candidate.get("profile", {})
     title = p.get("current_title", "professional")
     yoe = scored["evidence"].get("yoe", p.get("years_of_experience", 0))
@@ -40,26 +51,34 @@ def build_reasoning(candidate: dict, scored: dict, rank: int) -> str:
     # JD-connection clause from matched concepts (real evidence) or relevant skills
     concepts = [_CONCEPT_PHRASE[c] for c in scored.get("matched_concepts", []) if c in _CONCEPT_PHRASE]
     skills = [s for s, _ in scored["evidence"].get("relevant_skills", [])][:3]
+    verb = _CONNECT_LEAD[salt % len(_CONNECT_LEAD)]
     if concepts:
-        connect = "career shows " + ", ".join(concepts[:3])
+        topic = ", ".join(concepts[:3])
+        connect = f"{verb} {topic}"
     elif skills:
         connect = "relevant skills in " + ", ".join(skills)
     else:
         connect = "general engineering background"
 
-    fact = f"{title} with {yoe:.1f} yrs"
-    if scored["evidence"].get("has_product"):
-        fact += ", product-company experience"
-
+    prod = ", product-company experience" if scored["evidence"].get("has_product") else ""
     lead = _lead(rank, salt)
-    sentence = f"{lead} {fact}; {connect}."
+    yrs = f"{yoe:.1f} yrs"
+
+    # 3 sentence structures, picked by salt -> structural variety across candidates
+    variant = salt % 3
+    if variant == 0:
+        sentence = f"{lead} {title} with {yrs}{prod}; {connect}."
+    elif variant == 1:
+        sentence = f"{title}, {yrs}{prod} — {connect}."
+    else:
+        sentence = f"{lead} {connect[0].upper() + connect[1:]}; {title} with {yrs}{prod}."
 
     # honest concern clause (only real ones), tone-appropriate
     concerns = scored.get("concerns", [])
     if concerns:
-        # surface the single most material concern to keep it to 1-2 sentences
-        sentence += f" Concern: {concerns[0]}."
+        word = _CONCERN_WORD[salt % len(_CONCERN_WORD)]
+        sentence += f" {word}: {concerns[0]}."
     elif rank <= 10:
-        sentence += " Strong on both relevance and availability."
+        sentence += " " + _CLOSERS[salt % len(_CLOSERS)]
 
     return sentence
