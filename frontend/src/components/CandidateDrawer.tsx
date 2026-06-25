@@ -64,7 +64,8 @@ export function CandidateDrawer({ id }: { id: string | null }) {
             <RadarChart data={radar} outerRadius="72%">
               <PolarGrid stroke="#ffffff14" />
               <PolarAngleAxis dataKey="axis" tick={{ fill: "#8b90a8", fontSize: 10 }} />
-              <Radar dataKey="v" stroke="#7c5cff" fill="#7c5cff" fillOpacity={0.35} />
+              <Radar dataKey="v" stroke="#7c5cff" fill="#7c5cff" fillOpacity={0.35}
+                     isAnimationActive={false} />
             </RadarChart>
           </ResponsiveContainer>
         </div>
