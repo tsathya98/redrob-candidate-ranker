@@ -78,3 +78,7 @@ docker-build:
 # run the container (sandbox at http://localhost:7860)
 docker-run:
     docker run --rm -p 7860:7860 redrob-ranker
+
+# deploy the demo as a Hugging Face Docker Space (run `hf auth login` once first)
+deploy-hf:
+    uv run python scripts/deploy_hf_space.py
