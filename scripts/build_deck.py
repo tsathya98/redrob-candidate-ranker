@@ -340,7 +340,7 @@ def draw_arch(slide):
             arrow(slide, px, ay + ah / 2, x, ay + ah / 2)
 
     # Row B - scored ranking (rank.py)
-    label(slide, 0.35, 3.18, 3.4, "2 · SCORED RANKING - rank.py (CPU · offline · <=5 min)", SCORED)
+    label(slide, 0.35, 3.2, 6.5, "2 · SCORED RANKING - rank.py (CPU · offline · <=5 min)", SCORED)
     b = ["candidates\n.jsonl", "Honeypot\nfilter", "JD rubric + features\nsemantic + rerank",
          "x penalties\nx behavioral", "Top-100\n+ reasoning", "submission\n.csv / .xlsx"]
     by, bh, bw, bgap, bx0 = 3.5, 0.74, 1.4, 0.18, 0.35
