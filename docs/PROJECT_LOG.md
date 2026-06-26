@@ -254,3 +254,45 @@ evidence; don't make the last action a gamble. No leaderboard / no feedback duri
 
 **Next steps:** (1) top-20 manual audit + any weight fix; (2) deploy HF sandbox (required); (3) fill
 `submission_metadata.yaml` (team/repo/sandbox); (4) lock submission #1 once the release gate is green.
+
+---
+
+## 2026-06-26 — Independent LLM cross-validation of the whole methodology
+
+**Goal.** Stress-test our ranker against a fully *independent* ranking path: have LLMs re-rank the entire 100k
+pool and see whether they corroborate our top-100. If an independent method lands on the same people, our
+calculations + JD encoding are sound; where it diverges, understand why.
+
+**Method (offline analysis only — NOT part of the scored ranker).**
+1. Compressed all 100,000 candidates to compact ~120-token records (title, YoE, company size/industry, career
+   titles+descriptions, skills+proficiency, location, availability signals) -> 20 shard files of 5,000 each
+   (`scripts/llm_validation_compress.py`).
+2. One LLM judge per shard returned that shard's top-100 (20 agents) -> 2,000 finalists
+   (`scripts/llm_validation_assemble.py` -> `finalists.txt`).
+3. A final **Opus 4.8** judge re-ranked all 2,000 finalists into one independent top-100, applying the full
+   5-9y / product-not-services / shipped-retrieval-ranking / India-or-relocate rubric.
+
+**Result — strong corroboration.**
+- **63/100** of the independent top-100 are also in our submission (independent pipeline, compressed inputs).
+- **9/10** of our top-10 are in the independent top-100; **20/25** of our top-25; **35/50** of our top-50.
+- The very top agrees tightly: our #3/#4/#10 = the LLM's #1/#2/#3; our #2 = LLM #6.
+- **0 honeypots** in the independent top-100 (our impossibility filter has no false-negatives on this set).
+
+**The divergences validate our value-add (they are not errors).** The 37 the LLM ranked in but we sank vs the
+37 we kept but it dropped split cleanly on **behavioral availability** — the lever a resume-only read misses:
+- LLM-only picks: avg recruiter-response **0.52**, **18/37 NOT open-to-work**, 5 stale. (e.g. its #10
+  CAND_0092278 — great career, but response 0.07, not open-to-work, ~7-months stale: our multiplier correctly
+  sinks it.)
+- Our-only picks: avg response **0.71**, **0 weak, 0 stale**. Strongly-available in-band engineers.
+- We also keep candidates whose *career text* shows IR/search substance even when their skills *list* tilts
+  CV/speech (e.g. our #6 CAND_0006567, Meta+Razorpay search end-to-end) — substance over keywords, as designed.
+- (The compressed Opus judge used a coarse tiered scorer with many ties, so within-set rank correlation is
+  noisy/negative; set-overlap + top-of-list agreement are the meaningful signals.)
+
+**Takeaway.** An independent LLM re-rank of the full pool lands on the same elite candidates and the same top-3,
+finds zero honeypots, and the places it disagrees are exactly where our behavioral signals + career-substance
+reading add value over a paper read. Methodology corroborated. Artifacts in `scripts/llm_validation_*.py`
+(outputs git-ignored; contain ranked IDs).
+
+**Next steps:** (1) submit #2 (corrected XLSX after the notice-period fix + refreshed deck + repo URL);
+(2) REVOKE the HF token that was pasted in chat (https://huggingface.co/settings/tokens) and re-auth.

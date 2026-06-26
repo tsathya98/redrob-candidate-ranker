@@ -1,21 +1,20 @@
 # Redrob Hackathon — Submission Metadata
 # Mirrors the portal metadata. Source template: submission_metadata_template.yaml.
-# TODO: fill team identity / repo / sandbox before submission.
 
 # ============================================================================
 # Team identity
 # ============================================================================
-team_name: "TODO-team-name"
+team_name: "Argmax"
 
 primary_contact:
-  name: "TODO"
+  name: "Sathya T"
   email: "tsathya98@gmail.com"
-  phone: "TODO"
+  phone: "provided in portal form"   # withheld from public repo; entered directly on the submission portal
 
 team_members:
-  - name: "TODO"
+  - name: "Sathya T"
     email: "tsathya98@gmail.com"
-    role: "ML Engineer"
+    role: "ML Engineer"   # solo participant (Track 1 allows 1-4 members)
 
 # ============================================================================
 # Code and reproducibility
@@ -28,10 +27,10 @@ reproduce_command: "just rank   # = uv run python src/rank.py --candidates data/
 # Compute environment
 # ============================================================================
 compute:
-  platform: "WSL2 (Linux) — TODO confirm final run host"
+  platform: "WSL2 (Ubuntu on Windows 11)"
   cpu_cores: 8
   ram_gb: 16
-  python_version: "TODO (python --version)"
+  python_version: "3.13.11"
   os: "Ubuntu on WSL2"
   uses_gpu_for_inference: false          # must be false
   has_network_during_ranking: false      # must be false
@@ -72,4 +71,4 @@ declarations:
   code_is_original_work: true
   no_collusion: true
   honeypot_check_done: true     # dedicated honeypot filter; assert 0 in top-100 before submit
-  reproduction_tested: false    # TODO set true after timing the run end-to-end
+  reproduction_tested: true     # rank.py timed end-to-end (~146s CPU/offline) + validate_submission.py passes
