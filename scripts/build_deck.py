@@ -317,10 +317,18 @@ def arrow(slide, x1, y1, x2, y2, color=ARROW, dashed=False, width=1.5):
     return c
 
 
-def label(slide, x, y, w, text, color, size=9):
+def label(slide, x, y, w, text, color, size=9, bg=None, center=False):
     tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(0.3))
+    if bg is not None:
+        tb.fill.solid(); tb.fill.fore_color.rgb = bg; tb.line.fill.background()
+        tb.shadow.inherit = False
     tf = tb.text_frame; tf.word_wrap = True
-    r = tf.paragraphs[0].add_run(); r.text = text
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    tf.margin_top = tf.margin_bottom = Inches(0.01)
+    p = tf.paragraphs[0]
+    if center:
+        p.alignment = PP_ALIGN.CENTER
+    r = p.add_run(); r.text = text
     r.font.size = Pt(size); r.font.bold = True; r.font.color.rgb = color
     return tb
 
@@ -356,7 +364,11 @@ def draw_arch(slide):
     cx = ax0 + 4 * (aw + agap) + aw / 2
     tx = bx0 + 2 * (bw + bgap) + bw / 2
     arrow(slide, cx, ay + ah, tx, by, color=CACHE, dashed=True, width=1.25)
-    label(slide, 5.7, 2.86, 3.0, "cached scores -> loaded by rank.py", CACHE, size=7.5)
+    # label centered on the connector midpoint, with a white background so it cleanly breaks the dashed line
+    mid_x, mid_y = (cx + tx) / 2, (ay + ah + by) / 2
+    lw = 2.6
+    label(slide, mid_x - lw / 2, mid_y - 0.13, lw, "cached scores -> loaded by rank.py",
+          CACHE, size=7.5, bg=RGBColor(0xFF, 0xFF, 0xFF), center=True)
 
     # demo + compliance strip
     box(slide, 0.5, 4.46, 9.0, 0.56,
