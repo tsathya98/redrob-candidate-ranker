@@ -43,6 +43,7 @@ IGNORE = [
     "**/__pycache__/**", "**/node_modules/**", "frontend/dist/**",
     "submission/**", "artifacts/**", "/artifacts/**", "docs/images/**",
     "*.csv", "*.xlsx", "*.pptx", "*.pdf", "*.npy", "README.md",
+    "submission_metadata.yaml",  # portal metadata (contact info) — not needed by the demo sandbox
 ]
 
 
