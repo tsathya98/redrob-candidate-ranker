@@ -71,13 +71,26 @@ just serve        # build the UI and serve UI + API at http://localhost:8000
 
 ## Reproduce the submission
 
+The scored top-100 uses precomputed semantic + cross-encoder artifacts. These are **not committed**
+(they contain candidate ids — we don't publish the answer), so build them once with the bundled script,
+then rank. From a **clean checkout** this single command reproduces the submitted CSV exactly:
+
 ```bash
-just rank         # -> submission.csv   (or: uv run python src/rank.py --candidates data/candidates.jsonl --out submission.csv)
+just reproduce    # precompute artifacts (offline, one-time) -> rank -> validate
+```
+
+Already have `artifacts/`? Just run the ranking step (CPU-only, offline, ≤5 min):
+
+```bash
+just rank         # -> submission.csv  (= uv run python src/rank.py --candidates data/candidates.jsonl --out submission.csv)
 just validate     # checks the CSV against the challenge format rules
 ```
 
-The ranker is **stdlib-only** and runs **CPU-only, offline, ≤5 min, ≤16 GB** (embeddings precomputed
-offline). See `docs/04_scoring_and_submission.md` for full constraints.
+The artifact-building step is offline and documented (`scripts/precompute.py`, `BAAI/bge-small-en-v1.5` +
+`BAAI/bge-reranker-v2-m3`); the spec allows shipping *either* artifacts or a script to build them. If you
+run `rank.py` without artifacts it **stops with an explanation** rather than silently producing a different
+ranking — pass `--lexical-only` to run the lexical baseline on purpose. The ranking step itself is
+**stdlib-only**, **CPU-only, offline, ≤5 min, ≤16 GB**. See `docs/04_scoring_and_submission.md`.
 
 ## Demo UI (the sandbox)
 

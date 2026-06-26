@@ -39,18 +39,36 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                    help="Dir with precomputed semantic.json + reranker.json (Slice 2). Optional.")
     p.add_argument("--top-n", type=int, default=100, help="Number of candidates to output (challenge: 100).")
     p.add_argument("--quiet", action="store_true", help="Suppress progress output.")
+    p.add_argument("--lexical-only", action="store_true",
+                   help="Run the Slice-1 lexical baseline WITHOUT precomputed artifacts. "
+                        "This does NOT reproduce the official submission (which needs `just precompute`).")
     return p.parse_args(argv)
 
 
-def load_context(artifacts_dir: Path, quiet: bool = False) -> dict:
-    """Load precomputed Slice-2 artifacts if present; empty dict => Slice-1 (lexical-only) fallback."""
+def load_context(artifacts_dir: Path, quiet: bool = False, lexical_only: bool = False) -> dict:
+    """Load precomputed Slice-2 artifacts.
+
+    The official submission needs these artifacts. If they are absent we REFUSE by default
+    (rather than silently produce a different, lexical-only ranking that won't match the
+    submitted CSV) — pass --lexical-only to intentionally run the Slice-1 baseline instead.
+    """
     sem_path = artifacts_dir / "semantic.json"
     rer_path = artifacts_dir / "reranker.json"
     if not sem_path.exists():
-        if not quiet:
-            print("No artifacts found — running Slice-1 (lexical only). "
-                  "Run scripts/precompute.py for semantic + reranker.", file=sys.stderr)
-        return {}
+        if lexical_only:
+            if not quiet:
+                print("Running Slice-1 lexical baseline (--lexical-only); "
+                      "this is NOT the official submission ranking.", file=sys.stderr)
+            return {}
+        print(
+            f"\nERROR: precomputed artifacts not found in '{artifacts_dir}/'.\n"
+            "  The official top-100 needs the semantic + cross-encoder artifacts. Build them once\n"
+            "  (offline) then re-run:\n"
+            "      just precompute-install && just precompute && just rank\n"
+            "  Or, to run the lexical-only baseline (DIFFERENT ranking), pass: --lexical-only\n",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
     ctx: dict = {"semantic": json.loads(sem_path.read_text())}
     if rer_path.exists():
         rer = json.loads(rer_path.read_text())
@@ -80,7 +98,7 @@ def write_submission(rows: list[dict], out_path: Path) -> None:
 def run(args: argparse.Namespace) -> list[dict]:
     """Execute the ranking pipeline and return the ranked top-n rows."""
     t0 = time.time()
-    context = load_context(args.artifacts, quiet=args.quiet)
+    context = load_context(args.artifacts, quiet=args.quiet, lexical_only=args.lexical_only)
     heap: list[tuple] = []          # min-heap of (score, candidate_id, counter)
     payloads: dict[int, tuple] = {} # counter -> (scored, candidate)
     counter = 0

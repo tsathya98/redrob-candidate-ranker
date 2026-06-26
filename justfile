@@ -33,8 +33,12 @@ rank:
 validate:
     uv run python data/validate_submission.py submission.csv
 
-# rank then validate
+# rank then validate (assumes artifacts/ already built — see `just reproduce` for a clean checkout)
 check: rank validate
+
+# FULL reproduction from a clean checkout: build artifacts (offline, one-time) then rank + validate.
+# This is the one command that reproduces the submitted top-100 exactly.
+reproduce: precompute-install precompute rank validate
 
 # --- Slice 2: offline precompute (semantic embeddings + cross-encoder reranker) ----
 
