@@ -486,15 +486,20 @@ def main():
             # full-page live-demo hero + a compact assets line
             a = slide.shapes.add_textbox(Inches(0.4), Inches(1.46), Inches(9.2), Inches(0.3))
             pa = a.text_frame.paragraphs[0]; pa.alignment = PP_ALIGN.CENTER
-            ra = pa.add_run()
-            ra.text = ("GitHub (public)    ·    ranked output XLSX    ·    approach deck (PDF)    ·    "
-                       "docs/00-09 + PROJECT_LOG")
-            style(ra, 10, BODY)
+            ra = pa.add_run(); ra.text = "GitHub (public)"
+            ra.hyperlink.address = "https://github.com/tsathya98/redrob-candidate-ranker"
+            style(ra, 10, BODY); ra.font.underline = True
+            ra2 = pa.add_run()
+            ra2.text = ("    ·    ranked output XLSX    ·    approach deck (PDF)    ·    "
+                        "docs/00-09 + PROJECT_LOG")
+            style(ra2, 10, BODY)
             c = slide.shapes.add_textbox(Inches(0.4), Inches(1.78), Inches(9.2), Inches(0.3))
             pc = c.text_frame.paragraphs[0]; pc.alignment = PP_ALIGN.CENTER
-            rc = pc.add_run()
-            rc.text = "LIVE on Hugging Face Space    ·    tsathya98-redrob-candidate-ranker.hf.space"
+            rc = pc.add_run(); rc.text = "LIVE on Hugging Face Space    ·    "
             style(rc, 10.5, GREEN, bold=True)
+            ru = pc.add_run(); ru.text = "tsathya98-redrob-candidate-ranker.hf.space"
+            ru.hyperlink.address = "https://tsathya98-redrob-candidate-ranker.hf.space"
+            style(ru, 10.5, GREEN, bold=True); ru.font.underline = True
             image_panel(slide, "docs/images/ui_full.png", 0.8, 2.06, 8.4, 2.98)
         else:
             content_panel(slide)
